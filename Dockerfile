@@ -1,7 +1,7 @@
 # ═══════════════════════════════════════════════════
 # Stage 1: Build React frontend dengan Node.js
 # ═══════════════════════════════════════════════════
-FROM node:20-slim AS frontend-builder
+FROM node:22-slim AS frontend-builder
 
 RUN npm install -g pnpm@latest
 
