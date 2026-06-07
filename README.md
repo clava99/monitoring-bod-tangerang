@@ -1,3 +1,12 @@
+---
+title: Sigmon API
+emoji: 📊
+colorFrom: blue
+colorTo: indigo
+sdk: docker
+pinned: false
+---
+
 # SIGMON — Sistem Informasi Monitoring BOD
 
 Dashboard monitoring BOD interaktif untuk Cabang Tangerang dengan 81 unit, analisis performa, dan manajemen data terintegrasi.
