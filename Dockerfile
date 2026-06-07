@@ -11,6 +11,8 @@ COPY pnpm-workspace.yaml ./
 COPY pnpm-lock.yaml* ./
 COPY package.json ./
 
+COPY lib/ ./lib/
+
 WORKDIR /build/artifacts/sigmon
 COPY artifacts/sigmon/package.json ./
 
