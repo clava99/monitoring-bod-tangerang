@@ -86,6 +86,10 @@ export const api = {
       request<any>(`/units/${id}`, { method: "PUT", body: JSON.stringify(data) }),
     delete: (id: number) =>
       request<any>(`/units/${id}`, { method: "DELETE" }),
+    bulkDelete: (ids: number[]) =>
+      request<any>("/units/bulk/selected", { method: "DELETE", body: JSON.stringify({ ids }) }),
+    deleteAll: () =>
+      request<any>("/units/all/data", { method: "DELETE" }),
   },
 
   import: {

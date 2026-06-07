@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from typing import Optional
+from typing import Optional, List
+from pydantic import BaseModel
 from app.database import get_db
 from app.models import MonitoringData, User
 from app.schemas import MonitoringDataOut, MonitoringDataCreate, PaginatedUnits
@@ -8,6 +9,10 @@ from app.auth import get_current_user, require_manager
 import math
 
 router = APIRouter()
+
+
+class BulkDeleteRequest(BaseModel):
+    ids: List[int]
 
 
 @router.get("", response_model=PaginatedUnits)
@@ -59,14 +64,6 @@ def list_units(
     )
 
 
-@router.get("/{unit_id}", response_model=MonitoringDataOut)
-def get_unit(unit_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    row = db.query(MonitoringData).filter(MonitoringData.id == unit_id).first()
-    if not row:
-        raise HTTPException(status_code=404, detail="Data tidak ditemukan")
-    return row
-
-
 @router.post("", response_model=MonitoringDataOut)
 def create_unit(
     data: MonitoringDataCreate,
@@ -77,6 +74,37 @@ def create_unit(
     db.add(row)
     db.commit()
     db.refresh(row)
+    return row
+
+
+@router.delete("/bulk/selected")
+def bulk_delete_units(
+    payload: BulkDeleteRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_manager),
+):
+    if not payload.ids:
+        raise HTTPException(status_code=400, detail="Tidak ada ID yang dipilih")
+    deleted = db.query(MonitoringData).filter(MonitoringData.id.in_(payload.ids)).delete(synchronize_session=False)
+    db.commit()
+    return {"message": f"{deleted} data berhasil dihapus"}
+
+
+@router.delete("/all/data")
+def delete_all_units(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_manager),
+):
+    deleted = db.query(MonitoringData).delete(synchronize_session=False)
+    db.commit()
+    return {"message": f"Semua data ({deleted} unit) berhasil dihapus"}
+
+
+@router.get("/{unit_id}", response_model=MonitoringDataOut)
+def get_unit(unit_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    row = db.query(MonitoringData).filter(MonitoringData.id == unit_id).first()
+    if not row:
+        raise HTTPException(status_code=404, detail="Data tidak ditemukan")
     return row
 
 
