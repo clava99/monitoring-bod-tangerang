@@ -41,7 +41,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY --chown=user artifacts/api-server/ .
 
-COPY --chown=user --from=frontend-builder /build/artifacts/sigmon/dist ./static
+COPY --chown=user --from=frontend-builder /build/artifacts/api-server/static ./static
 
 COPY --chown=user init_db.sql .
 COPY --chown=user init_db.py .
