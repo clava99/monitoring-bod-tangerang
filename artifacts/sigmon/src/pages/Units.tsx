@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { api } from "@/lib/api";
 import Sidebar from "@/components/Sidebar";
-import { Plus, Pencil, Trash2, X, Loader2, Check, CheckSquare, Square, AlertTriangle } from "lucide-react";
+import { Plus, Pencil, Trash2, X, Loader2, Check, CheckSquare, Square, AlertTriangle, MousePointerClick } from "lucide-react";
 
 function UnitForm({ initial, onSave, onCancel, loading }: any) {
   const [form, setForm] = useState(initial || { unit: "", region: "", area: "", period: "", noc: "", os_aktif: "", lending: "" });
@@ -67,7 +67,7 @@ function UnitForm({ initial, onSave, onCancel, loading }: any) {
   );
 }
 
-function ConfirmModal({ open, title, description, confirmLabel, onConfirm, onCancel, danger }: any) {
+function ConfirmModal({ open, title, description, confirmLabel, onConfirm, onCancel }: any) {
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
@@ -87,7 +87,7 @@ function ConfirmModal({ open, title, description, confirmLabel, onConfirm, onCan
             Batal
           </button>
           <button onClick={onConfirm}
-            className={`px-4 py-2 text-xs font-medium rounded-lg text-white transition-colors ${danger ? "bg-red-600 hover:bg-red-700" : "bg-primary hover:opacity-90"}`}>
+            className="px-4 py-2 text-xs font-medium rounded-lg text-white bg-red-600 hover:bg-red-700 transition-colors">
             {confirmLabel}
           </button>
         </div>
@@ -106,11 +106,12 @@ export default function Units() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
 
+  const [selectMode, setSelectMode] = useState(false);
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [bulkDeleting, setBulkDeleting] = useState(false);
-  const [confirmModal, setConfirmModal] = useState<{
-    open: boolean; type: "selected" | "all" | null;
-  }>({ open: false, type: null });
+  const [confirmModal, setConfirmModal] = useState<{ open: boolean; type: "selected" | "all" | null }>({
+    open: false, type: null,
+  });
 
   const fetchUnits = async () => {
     setLoading(true);
@@ -122,7 +123,6 @@ export default function Units() {
   };
 
   useEffect(() => { fetchUnits(); }, [page, search]);
-
   useEffect(() => { setSelected(new Set()); }, [page, search]);
 
   const currentIds: number[] = units?.data?.map((r: any) => r.id) ?? [];
@@ -131,26 +131,19 @@ export default function Units() {
 
   const toggleSelectAll = () => {
     if (allOnPageSelected) {
-      setSelected(prev => {
-        const next = new Set(prev);
-        currentIds.forEach(id => next.delete(id));
-        return next;
-      });
+      setSelected(prev => { const n = new Set(prev); currentIds.forEach(id => n.delete(id)); return n; });
     } else {
-      setSelected(prev => {
-        const next = new Set(prev);
-        currentIds.forEach(id => next.add(id));
-        return next;
-      });
+      setSelected(prev => { const n = new Set(prev); currentIds.forEach(id => n.add(id)); return n; });
     }
   };
 
   const toggleSelect = (id: number) => {
-    setSelected(prev => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
+    setSelected(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
+  };
+
+  const exitSelectMode = () => {
+    setSelectMode(false);
+    setSelected(new Set());
   };
 
   const handleSave = async (data: any) => {
@@ -183,7 +176,7 @@ export default function Units() {
     setConfirmModal({ open: false, type: null });
     try {
       await api.units.bulkDelete(Array.from(selected));
-      setSelected(new Set());
+      exitSelectMode();
       fetchUnits();
     } catch (err: any) { alert(err.message); }
     setBulkDeleting(false);
@@ -194,7 +187,7 @@ export default function Units() {
     setConfirmModal({ open: false, type: null });
     try {
       await api.units.deleteAll();
-      setSelected(new Set());
+      exitSelectMode();
       fetchUnits();
     } catch (err: any) { alert(err.message); }
     setBulkDeleting(false);
@@ -205,11 +198,15 @@ export default function Units() {
     else if (confirmModal.type === "all") handleDeleteAll();
   };
 
+  const handleDeleteClick = () => {
+    if (selected.size === 0) return;
+    setConfirmModal({ open: true, type: "selected" });
+  };
+
   return (
     <div className="bg-background min-h-screen">
       <ConfirmModal
         open={confirmModal.open}
-        type={confirmModal.type}
         title={confirmModal.type === "all" ? "Hapus Semua Data?" : `Hapus ${selected.size} Data Terpilih?`}
         description={
           confirmModal.type === "all"
@@ -219,7 +216,6 @@ export default function Units() {
         confirmLabel={confirmModal.type === "all" ? "Hapus Semua" : `Hapus ${selected.size} Data`}
         onConfirm={handleConfirm}
         onCancel={() => setConfirmModal({ open: false, type: null })}
-        danger
       />
 
       <Sidebar />
@@ -230,28 +226,55 @@ export default function Units() {
               <h1 className="text-base font-semibold text-foreground">Data Unit</h1>
               <p className="text-xs text-muted-foreground mt-0.5">Kelola data monitoring unit</p>
             </div>
+
             <div className="flex items-center gap-2">
-              {selected.size > 0 && (
-                <button
-                  onClick={() => setConfirmModal({ open: true, type: "selected" })}
-                  disabled={bulkDeleting}
-                  className="flex items-center gap-1.5 px-3 py-2 bg-red-600 text-white text-xs font-medium rounded-lg hover:bg-red-700 disabled:opacity-60 transition-colors">
-                  {bulkDeleting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
-                  Hapus {selected.size} Dipilih
-                </button>
+              {!selectMode ? (
+                <>
+                  <button
+                    onClick={() => setSelectMode(true)}
+                    disabled={!units?.total}
+                    className="flex items-center gap-1.5 px-3 py-2 border border-border text-xs font-medium rounded-lg hover:bg-muted disabled:opacity-40 transition-colors">
+                    <MousePointerClick className="w-3.5 h-3.5" />
+                    Select
+                  </button>
+                  <button
+                    onClick={() => setConfirmModal({ open: true, type: "all" })}
+                    disabled={bulkDeleting || !units?.total}
+                    className="flex items-center gap-1.5 px-3 py-2 bg-red-50 text-red-600 border border-red-200 text-xs font-medium rounded-lg hover:bg-red-100 disabled:opacity-40 transition-colors">
+                    {bulkDeleting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                    Delete All
+                  </button>
+                  <button
+                    onClick={() => { setShowForm(true); setEditItem(null); }}
+                    className="flex items-center gap-1.5 px-3 py-2 bg-primary text-primary-foreground text-xs font-medium rounded-lg hover:opacity-90">
+                    <Plus className="w-3.5 h-3.5" />
+                    Tambah Unit
+                  </button>
+                </>
+              ) : (
+                <>
+                  {selected.size > 0 && (
+                    <span className="px-2.5 py-1 bg-red-100 text-red-700 text-xs font-semibold rounded-full">
+                      {selected.size} dipilih
+                    </span>
+                  )}
+                  <button
+                    onClick={exitSelectMode}
+                    className="flex items-center gap-1.5 px-3 py-2 border border-border text-xs font-medium rounded-lg hover:bg-muted transition-colors">
+                    <X className="w-3.5 h-3.5" />
+                    Batal
+                  </button>
+                  <button
+                    onClick={handleDeleteClick}
+                    disabled={selected.size === 0 || bulkDeleting}
+                    className="flex items-center gap-1.5 px-3 py-2 bg-red-600 text-white text-xs font-medium rounded-lg hover:bg-red-700 disabled:opacity-40 transition-colors">
+                    {bulkDeleting
+                      ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      : <Trash2 className="w-3.5 h-3.5" />}
+                    Delete
+                  </button>
+                </>
               )}
-              <button
-                onClick={() => setConfirmModal({ open: true, type: "all" })}
-                disabled={bulkDeleting || !units?.total}
-                className="flex items-center gap-1.5 px-3 py-2 bg-red-50 text-red-600 border border-red-200 text-xs font-medium rounded-lg hover:bg-red-100 disabled:opacity-40 transition-colors">
-                <Trash2 className="w-3.5 h-3.5" />
-                Hapus Semua
-              </button>
-              <button onClick={() => { setShowForm(true); setEditItem(null); }}
-                className="flex items-center gap-1.5 px-3 py-2 bg-primary text-primary-foreground text-xs font-medium rounded-lg hover:opacity-90">
-                <Plus className="w-3.5 h-3.5" />
-                Tambah Unit
-              </button>
             </div>
           </div>
         </div>
@@ -279,63 +302,71 @@ export default function Units() {
 
           <div className="bg-card rounded-xl border border-card-border shadow-sm overflow-hidden">
             <div className="flex items-center justify-between px-5 py-4 border-b border-card-border">
-              <div className="flex items-center gap-3">
-                <p className="text-sm font-semibold text-foreground">
-                  {units?.total || 0} unit
-                </p>
-                {selected.size > 0 && (
-                  <span className="px-2 py-0.5 bg-red-100 text-red-700 text-xs font-medium rounded-full">
-                    {selected.size} dipilih
-                  </span>
-                )}
-              </div>
-              <input type="search" placeholder="Cari unit..." value={search}
+              <p className="text-sm font-semibold text-foreground">
+                {units?.total || 0} unit
+              </p>
+              <input
+                type="search"
+                placeholder="Cari unit..."
+                value={search}
                 onChange={e => { setSearch(e.target.value); setPage(1); }}
-                className="px-3 py-1.5 text-xs border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 w-48" />
+                className="px-3 py-1.5 text-xs border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 w-48"
+              />
             </div>
 
             <div className="overflow-x-auto">
               <table className="w-full text-xs">
                 <thead>
                   <tr className="border-b border-border" style={{ background: "hsl(210 40% 98%)" }}>
-                    <th className="px-4 py-3 w-10">
-                      <button
-                        onClick={toggleSelectAll}
-                        className="flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
-                        title={allOnPageSelected ? "Batalkan semua" : "Pilih semua di halaman ini"}>
-                        {allOnPageSelected
-                          ? <CheckSquare className="w-4 h-4 text-primary" />
-                          : someOnPageSelected
-                            ? <CheckSquare className="w-4 h-4 text-primary/50" />
-                            : <Square className="w-4 h-4" />}
-                      </button>
-                    </th>
+                    {selectMode && (
+                      <th className="px-4 py-3 w-10">
+                        <button
+                          onClick={toggleSelectAll}
+                          className="flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                          title={allOnPageSelected ? "Batalkan semua" : "Pilih semua di halaman ini"}>
+                          {allOnPageSelected
+                            ? <CheckSquare className="w-4 h-4 text-red-600" />
+                            : someOnPageSelected
+                              ? <CheckSquare className="w-4 h-4 text-red-400" />
+                              : <Square className="w-4 h-4" />}
+                        </button>
+                      </th>
+                    )}
                     <th className="px-4 py-3 text-left font-medium text-muted-foreground">Unit</th>
                     <th className="px-4 py-3 text-left font-medium text-muted-foreground">Region</th>
                     <th className="px-4 py-3 text-left font-medium text-muted-foreground">Periode</th>
                     <th className="px-4 py-3 text-right font-medium text-muted-foreground">NOC</th>
                     <th className="px-4 py-3 text-right font-medium text-muted-foreground">Lending</th>
                     <th className="px-4 py-3 text-right font-medium text-muted-foreground">% RR</th>
-                    <th className="px-4 py-3 text-center font-medium text-muted-foreground">Aksi</th>
+                    {!selectMode && (
+                      <th className="px-4 py-3 text-center font-medium text-muted-foreground">Aksi</th>
+                    )}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
                   {loading ? (
-                    <tr><td colSpan={8} className="px-5 py-8 text-center text-muted-foreground">Memuat...</td></tr>
+                    <tr>
+                      <td colSpan={selectMode ? 7 : 7} className="px-5 py-8 text-center text-muted-foreground">
+                        Memuat...
+                      </td>
+                    </tr>
                   ) : units?.data?.map((row: any) => (
                     <tr
                       key={row.id}
-                      className={`hover:bg-muted/20 transition-colors ${selected.has(row.id) ? "bg-red-50/60" : ""}`}>
-                      <td className="px-4 py-3">
-                        <button
-                          onClick={() => toggleSelect(row.id)}
-                          className="flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
-                          {selected.has(row.id)
-                            ? <CheckSquare className="w-4 h-4 text-red-600" />
-                            : <Square className="w-4 h-4" />}
-                        </button>
+                      onClick={selectMode ? () => toggleSelect(row.id) : undefined}
+                      className={`transition-colors ${selectMode ? "cursor-pointer" : "hover:bg-muted/20"} ${selected.has(row.id) ? "bg-red-50" : selectMode ? "hover:bg-muted/20" : ""}`}>
+                      {selectMode && (
+                        <td className="px-4 py-3">
+                          <div className="flex items-center justify-center">
+                            {selected.has(row.id)
+                              ? <CheckSquare className="w-4 h-4 text-red-600" />
+                              : <Square className="w-4 h-4 text-muted-foreground" />}
+                          </div>
+                        </td>
+                      )}
+                      <td className="px-4 py-3 font-medium text-foreground">
+                        {row.unit.replace(/^M\.[A-Z0-9]+- /, "")}
                       </td>
-                      <td className="px-4 py-3 font-medium text-foreground">{row.unit.replace(/^M\.[A-Z0-9]+- /, "")}</td>
                       <td className="px-4 py-3 text-muted-foreground">{row.region || "—"}</td>
                       <td className="px-4 py-3 text-muted-foreground">{row.period || "—"}</td>
                       <td className="px-4 py-3 text-right tabular-nums">{row.noc?.toLocaleString("id-ID") || "—"}</td>
@@ -343,24 +374,33 @@ export default function Units() {
                       <td className="px-4 py-3 text-right tabular-nums">
                         {row.pct_rr != null ? `${(row.pct_rr * 100).toFixed(1)}%` : "—"}
                       </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center justify-center gap-1">
-                          <button onClick={() => { setEditItem(row); setShowForm(false); }}
-                            className="p-1.5 rounded-lg hover:bg-blue-50 text-muted-foreground hover:text-blue-600 transition-colors">
-                            <Pencil className="w-3.5 h-3.5" />
-                          </button>
-                          <button onClick={() => handleDelete(row.id)} disabled={deletingId === row.id}
-                            className="p-1.5 rounded-lg hover:bg-red-50 text-muted-foreground hover:text-red-500 transition-colors">
-                            {deletingId === row.id
-                              ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                              : <Trash2 className="w-3.5 h-3.5" />}
-                          </button>
-                        </div>
-                      </td>
+                      {!selectMode && (
+                        <td className="px-4 py-3">
+                          <div className="flex items-center justify-center gap-1">
+                            <button
+                              onClick={() => { setEditItem(row); setShowForm(false); }}
+                              className="p-1.5 rounded-lg hover:bg-blue-50 text-muted-foreground hover:text-blue-600 transition-colors">
+                              <Pencil className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(row.id)}
+                              disabled={deletingId === row.id}
+                              className="p-1.5 rounded-lg hover:bg-red-50 text-muted-foreground hover:text-red-500 transition-colors">
+                              {deletingId === row.id
+                                ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                : <Trash2 className="w-3.5 h-3.5" />}
+                            </button>
+                          </div>
+                        </td>
+                      )}
                     </tr>
                   ))}
                   {!loading && units?.data?.length === 0 && (
-                    <tr><td colSpan={8} className="px-5 py-8 text-center text-muted-foreground">Tidak ada data</td></tr>
+                    <tr>
+                      <td colSpan={selectMode ? 7 : 8} className="px-5 py-8 text-center text-muted-foreground">
+                        Tidak ada data
+                      </td>
+                    </tr>
                   )}
                 </tbody>
               </table>
@@ -370,11 +410,15 @@ export default function Units() {
               <div className="flex items-center justify-between px-5 py-3 border-t border-border">
                 <p className="text-xs text-muted-foreground">Halaman {page} dari {units.total_pages}</p>
                 <div className="flex gap-1">
-                  <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page <= 1}
+                  <button
+                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                    disabled={page <= 1}
                     className="px-3 py-1.5 text-xs border border-border rounded-lg hover:bg-muted disabled:opacity-40">
                     ← Prev
                   </button>
-                  <button onClick={() => setPage(p => Math.min(units.total_pages, p + 1))} disabled={page >= units.total_pages}
+                  <button
+                    onClick={() => setPage(p => Math.min(units.total_pages, p + 1))}
+                    disabled={page >= units.total_pages}
                     className="px-3 py-1.5 text-xs border border-border rounded-lg hover:bg-muted disabled:opacity-40">
                     Next →
                   </button>
