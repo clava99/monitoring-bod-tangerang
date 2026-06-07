@@ -75,3 +75,4 @@ artifacts/api-server/static/
 .env
 .env.local
 .env.production
+artifacts/api-server/static/
