@@ -1,0 +1,42 @@
+name: Deploy to Hugging Face Space
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'artifacts/api-server/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Push to Hugging Face Space
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          git config --global user.email "action@github.com"
+          git config --global user.name "GitHub Action"
+
+          mkdir -p hf_deploy
+          rsync -av \
+            --exclude='.git' \
+            --exclude='__pycache__' \
+            --exclude='*.pyc' \
+            --exclude='*.jpg' \
+            --exclude='*.jpeg' \
+            --exclude='*.png' \
+            --exclude='*.gif' \
+            --exclude='.env' \
+            --exclude='node_modules' \
+            artifacts/api-server/ hf_deploy/
+
+          cd hf_deploy
+          git init
+          git remote add origin https://banetvictor:$HF_TOKEN@huggingface.co/spaces/banetvictor/sigmon-api
+
+          git add -A
+          git commit -m "Deploy from GitHub: ${{ github.sha }}"
+
+          git push --force origin HEAD:main
