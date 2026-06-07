@@ -13,12 +13,19 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="SIGMON API", version="1.0.0")
 
+_default_origins = "http://localhost:5000,http://localhost:5173"
+_replit_domain = os.environ.get("REPLIT_DEV_DOMAIN")
+if _replit_domain:
+    _default_origins += f",https://{_replit_domain}"
+
+ALLOWED_ORIGINS = os.environ.get("ALLOWED_ORIGINS", _default_origins).split(",")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_headers=["Authorization", "Content-Type"],
 )
 
 app.include_router(auth_router.router, prefix="/api/auth", tags=["auth"])

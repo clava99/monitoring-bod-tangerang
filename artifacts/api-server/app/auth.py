@@ -1,6 +1,6 @@
 import os
 import bcrypt as _bcrypt
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 from jose import JWTError, jwt
 from fastapi import Depends, HTTPException, status
@@ -9,7 +9,10 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import User
 
-SECRET_KEY = os.environ.get("SESSION_SECRET", "sigmon-secret-key-2026")
+SECRET_KEY = os.environ.get("SESSION_SECRET")
+if not SECRET_KEY:
+    raise RuntimeError("SESSION_SECRET environment variable is required")
+
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_HOURS = 24
 
@@ -29,7 +32,7 @@ def get_password_hash(password: str) -> str:
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
-    expire = datetime.utcnow() + (expires_delta or timedelta(hours=ACCESS_TOKEN_EXPIRE_HOURS))
+    expire = datetime.now(timezone.utc) + (expires_delta or timedelta(hours=ACCESS_TOKEN_EXPIRE_HOURS))
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 

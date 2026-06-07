@@ -50,3 +50,25 @@ Thumbs.db
 attached_assets/
 .replit
 replit.nix
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+
+# Database files — never commit real data
+*.db
+*.sqlite
+*.sqlite3
+
+# Environment
+.env
+.env.local
+.env.production
