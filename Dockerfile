@@ -10,6 +10,8 @@ WORKDIR /build
 COPY pnpm-workspace.yaml ./
 COPY pnpm-lock.yaml* ./
 COPY package.json ./
+COPY tsconfig.base.json ./
+COPY tsconfig.json ./
 
 COPY lib/ ./lib/
 
