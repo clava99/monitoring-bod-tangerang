@@ -29,6 +29,7 @@ export default function Dashboard() {
   const [filters, setFilters] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   const [region, setRegion] = useState("");
   const [area, setArea] = useState("");
@@ -73,12 +74,20 @@ export default function Dashboard() {
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
 
-  const handleExport = () => {
-    const params: Record<string, string> = {};
-    if (region) params.region = region;
-    if (area) params.area = area;
-    if (period) params.period = period;
-    api.export.excel(params);
+  const handleExport = async () => {
+    if (exporting) return;
+    setExporting(true);
+    try {
+      const params: Record<string, string> = {};
+      if (region) params.region = region;
+      if (area) params.area = area;
+      if (period) params.period = period;
+      await api.export.excel(params);
+    } catch (e: any) {
+      alert("Export gagal: " + (e?.message || "Terjadi kesalahan"));
+    } finally {
+      setExporting(false);
+    }
   };
 
   const selectClass = "border border-border rounded-lg px-2.5 py-2 bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 w-full";
@@ -118,11 +127,15 @@ export default function Dashboard() {
               </button>
               <button
                 onClick={handleExport}
+                disabled={exporting}
                 className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium bg-primary
-                  text-primary-foreground rounded-lg hover:opacity-90 transition-opacity"
+                  text-primary-foreground rounded-lg hover:opacity-90 transition-opacity disabled:opacity-60"
               >
-                <Download className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Export Excel</span>
+                {exporting
+                  ? <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                  : <Download className="w-3.5 h-3.5" />
+                }
+                <span className="hidden sm:inline">{exporting ? "Mengekspor..." : "Export Excel"}</span>
               </button>
             </div>
           </div>
