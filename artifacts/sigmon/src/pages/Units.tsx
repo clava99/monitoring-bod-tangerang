@@ -233,14 +233,14 @@ export default function Units() {
                   <button
                     onClick={() => setSelectMode(true)}
                     disabled={!units?.total}
-                    className="flex items-center gap-1.5 px-3 py-2 border border-border text-xs font-medium rounded-lg hover:bg-muted disabled:opacity-40 transition-colors">
+                    className="flex items-center gap-1.5 px-3 py-2 bg-muted text-foreground border border-border text-xs font-medium rounded-lg hover:bg-muted/70 disabled:opacity-40 transition-colors">
                     <MousePointerClick className="w-3.5 h-3.5" />
                     Select
                   </button>
                   <button
                     onClick={() => setConfirmModal({ open: true, type: "all" })}
                     disabled={bulkDeleting || !units?.total}
-                    className="flex items-center gap-1.5 px-3 py-2 bg-red-50 text-red-600 border border-red-200 text-xs font-medium rounded-lg hover:bg-red-100 disabled:opacity-40 transition-colors">
+                    className="flex items-center gap-1.5 px-3 py-2 bg-red-50 text-red-600 border border-red-200 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20 text-xs font-medium rounded-lg hover:bg-red-100 dark:hover:bg-red-500/15 disabled:opacity-40 transition-colors">
                     {bulkDeleting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
                     Delete All
                   </button>
@@ -254,7 +254,7 @@ export default function Units() {
               ) : (
                 <>
                   {selected.size > 0 && (
-                    <span className="px-2.5 py-1 bg-red-100 text-red-700 text-xs font-semibold rounded-full">
+                    <span className="px-2.5 py-1 bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-400 text-xs font-semibold rounded-full">
                       {selected.size} dipilih
                     </span>
                   )}
