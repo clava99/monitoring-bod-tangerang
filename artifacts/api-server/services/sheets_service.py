@@ -5,6 +5,12 @@ from typing import List, Dict, Any, Optional
 from services.excel_service import parse_excel_bytes
 
 
+def _camel_to_snake(name: str) -> str:
+    """Convert camelCase/PascalCase to snake_case: pctRr → pct_rr, osAktif → os_aktif"""
+    s = re.sub(r"([A-Z])", r"_\1", name.strip()).lower().lstrip("_")
+    return re.sub(r"_+", "_", s)
+
+
 def is_apps_script_url(url: str) -> bool:
     return "script.google.com/macros/s/" in url
 
@@ -143,24 +149,48 @@ def fetch_from_apps_script(url: str) -> List[Dict[str, Any]]:
 
 
 def normalise_apps_script_records(rows: List[Dict], period: Optional[str] = None) -> List[Dict[str, Any]]:
+    # Maps normalised source key → DB field name.
+    # Covers both snake_case (legacy) and camelCase-derived snake_case keys
+    # that Apps Script sends (e.g. pctRr → pct_rr, osAktif → os_aktif).
     FIELD_MAP = {
+        # identity / string fields
         "wilayah": "wilayah", "region": "region", "area": "area",
-        "cabang_id": "cabang_id", "cabang": "cabang_id",
+        "cabang_id": "cabang_id", "cabang": "cabang_id", "cabangid": "cabang_id",
         "unit": "unit", "nama_unit": "unit",
-        "noa": "noa",
-        "noc": "noc", "jumlah_nasabah": "noc",
-        "os_aktif": "os_aktif", "os": "os_aktif", "outstanding": "os_aktif",
+        # NOA / NOC — Apps Script sends meiNoa / meiNoc
+        "noa": "noa", "mei_noa": "noa", "meinoa": "noa",
+        "noc": "noc", "mei_noc": "noc", "meinoc": "noc", "jumlah_nasabah": "noc",
+        # OS Aktif — Apps Script key is osAktif (camelCase)
+        "os_aktif": "os_aktif", "osaktif": "os_aktif",
+        "os": "os_aktif", "outstanding": "os_aktif",
+        # Lending
         "lending": "lending",
-        "noa_par": "noa_par", "os_par": "os_par",
-        "noa_npl": "noa_npl", "os_npl": "os_npl",
-        "os_3r": "os_3r", "noa_lar": "noa_lar", "os_lar": "os_lar",
-        "pct_rr": "pct_rr", "rr": "pct_rr", "tingkat_pengembalian": "pct_rr",
-        "target_noc": "target_noc", "target_os": "target_os", "target_lending": "target_lending",
+        # PAR / NPL / LAR
+        "noa_par": "noa_par", "noapar": "noa_par",
+        "os_par": "os_par",   "ospar": "os_par",
+        "noa_npl": "noa_npl", "noanpl": "noa_npl",
+        "os_npl": "os_npl",   "osnpl": "os_npl",
+        "os_3r": "os_3r",     "os3r": "os_3r",
+        "noa_lar": "noa_lar", "noalar": "noa_lar",
+        "os_lar": "os_lar",   "oslar": "os_lar",
+        # % RR — Apps Script key is pctRr
+        "pct_rr": "pct_rr", "pctrr": "pct_rr",
+        "rr": "pct_rr", "tingkat_pengembalian": "pct_rr",
+        # RKAP / target — Apps Script sends rkapOs / rkapLending
+        "target_noc": "target_noc",
+        "target_os": "target_os",   "rkap_os": "target_os",   "rkapos": "target_os",
+        "target_lending": "target_lending", "rkap_lending": "target_lending", "rkaplending": "target_lending",
+        # Gap
         "gap_noc": "gap_noc", "gap_os": "gap_os", "gap_lending": "gap_lending",
-        "pct_noc": "pct_noc", "pencapaian_noc": "pct_noc",
-        "pct_os": "pct_os", "pencapaian_os": "pct_os",
-        "pct_lending": "pct_lending", "pencapaian_lending": "pct_lending",
-        "pct_os_npl": "pct_os_npl", "ao": "ao",
+        # % Pencapaian — Apps Script sends pctNoc / pctOs / pctLending
+        "pct_noc": "pct_noc", "pctnoc": "pct_noc", "pencapaian_noc": "pct_noc",
+        "pct_os": "pct_os",   "pctos": "pct_os",   "pencapaian_os": "pct_os",
+        "pct_lending": "pct_lending", "pctlending": "pct_lending", "pencapaian_lending": "pct_lending",
+        "pct_os_npl": "pct_os_npl",  "pctosnpl": "pct_os_npl",
+        "pct_os_par": "pct_os_npl",  "pctospar": "pct_os_npl",
+        "pct_os_lar": "pct_os_npl",  "pctoslar": "pct_os_npl",
+        # AO & period
+        "ao": "ao",
         "period": "period", "periode": "period",
     }
     INT_FIELDS = {"noc", "noa_par", "noa_npl", "noa_lar", "target_noc", "gap_noc", "ao"}
@@ -174,7 +204,18 @@ def normalise_apps_script_records(rows: List[Dict], period: Optional[str] = None
     for row in rows:
         if not isinstance(row, dict):
             continue
-        norm_row = {k.strip().lower().replace(" ", "_"): v for k, v in row.items()}
+
+        # Build a normalised lookup that covers BOTH:
+        #   1. simple lowercase + underscore (for snake_case keys)
+        #   2. camelCase → snake_case conversion (for Apps Script camelCase keys)
+        norm_row: Dict[str, Any] = {}
+        for k, v in row.items():
+            simple = k.strip().lower().replace(" ", "_")
+            snake  = _camel_to_snake(k)
+            norm_row[simple] = v
+            if snake != simple:
+                norm_row[snake] = v
+
         record: Dict[str, Any] = {"period": period}
         for src_key, db_key in FIELD_MAP.items():
             if src_key in norm_row:
@@ -194,6 +235,7 @@ def normalise_apps_script_records(rows: List[Dict], period: Optional[str] = None
                         record[db_key] = None
                 else:
                     record[db_key] = str(val).strip() if val is not None else None
+
         if period:
             record["period"] = period
         if record.get("unit"):
