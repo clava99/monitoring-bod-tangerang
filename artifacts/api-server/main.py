@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 
-from app.database import engine, Base
+from app.database import engine, Base, SessionLocal
 from app.routers import (
     auth_router,
     dashboard_router,
@@ -20,6 +20,27 @@ from app.routers import (
 )
 
 Base.metadata.create_all(bind=engine)
+
+
+def _seed_default_users():
+    from app.models import User
+    from app.auth import get_password_hash
+    db = SessionLocal()
+    try:
+        defaults = [
+            ("admin", "admin@sigmon.local", "admin123", "admin"),
+            ("manager", "manager@sigmon.local", "admin123", "manager"),
+            ("staff", "staff@sigmon.local", "admin123", "staff"),
+        ]
+        for username, email, password, role in defaults:
+            if not db.query(User).filter(User.username == username).first():
+                db.add(User(username=username, email=email, hashed_password=get_password_hash(password), role=role))
+        db.commit()
+    finally:
+        db.close()
+
+
+_seed_default_users()
 
 app = FastAPI(
     title="SIGMON API",

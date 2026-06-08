@@ -33,7 +33,7 @@ outputType = "console"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "cd artifacts/api-server && .venv/bin/uvicorn main:app --host 0.0.0.0 --port 8080 --reload"
+args = "cd artifacts/api-server && uvicorn main:app --host 0.0.0.0 --port 8080 --reload"
 waitForPort = 8080
 
 [[workflows.workflow]]
@@ -45,7 +45,7 @@ outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "cd artifacts/sigmon && node_modules/.bin/vite --host 0.0.0.0 --port 5000"
+args = "pnpm --filter @workspace/sigmon run dev"
 waitForPort = 5000
 
 [agent]
@@ -59,14 +59,6 @@ timeoutMs = 20000
 [[ports]]
 localPort = 5000
 externalPort = 80
-
-[[ports]]
-localPort = 5001
-externalPort = 3003
-
-[[ports]]
-localPort = 5002
-externalPort = 4200
 
 [[ports]]
 localPort = 5173
@@ -85,15 +77,11 @@ localPort = 8080
 externalPort = 8080
 
 [[ports]]
-localPort = 8081
-externalPort = 8081
-
-[[ports]]
 localPort = 25546
 externalPort = 80
 
 [nix]
 channel = "stable-25_05"
-packages = ["glibcLocales"]
+packages = ["cargo", "glibcLocales", "libiconv", "libyaml", "rustc"]
 
 [userenv]
