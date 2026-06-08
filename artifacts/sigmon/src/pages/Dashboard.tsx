@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { api } from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
 import Sidebar from "@/components/Sidebar";
 import SummaryCards from "@/components/SummaryCards";
 import TopBottomChart from "@/components/TopBottomChart";
@@ -7,9 +8,10 @@ import UnitsTable from "@/components/UnitsTable";
 import TrendChart from "@/components/TrendChart";
 import AlertPanel from "@/components/AlertPanel";
 import RiskChart from "@/components/RiskChart";
+import ChangePasswordModal from "@/components/ChangePasswordModal";
 import { SkeletonCard, SkeletonChart, SkeletonTable } from "@/components/SkeletonLoader";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { RefreshCw, Download, Filter } from "lucide-react";
+import { RefreshCw, Download, Filter, ShieldAlert } from "lucide-react";
 
 const METRICS = [
   { value: "lending", label: "Lending" },
@@ -20,6 +22,8 @@ const METRICS = [
 ];
 
 export default function Dashboard() {
+  const { user, refreshUser } = useAuth();
+  const [showChangePassword, setShowChangePassword] = useState(false);
   const [summary, setSummary] = useState<any>(null);
   const [topBottom, setTopBottom] = useState<any>(null);
   const [units, setUnits] = useState<any>(null);
@@ -180,6 +184,32 @@ export default function Dashboard() {
           </div>
         </div>
 
+        {/* ── Banner Ganti Password Default ── */}
+        {user && user.password_changed === false && (
+          <div className="mx-4 sm:mx-5 lg:mx-6 mt-4 flex items-start gap-3 px-4 py-3 rounded-xl"
+            style={{
+              background: "hsl(38 92% 50% / 0.12)",
+              border: "1px solid hsl(38 92% 50% / 0.35)",
+            }}>
+            <ShieldAlert className="w-5 h-5 mt-0.5 shrink-0" style={{ color: "hsl(38 92% 45%)" }} />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold" style={{ color: "hsl(38 92% 35%)" }}>
+                Anda masih menggunakan password default
+              </p>
+              <p className="text-xs mt-0.5" style={{ color: "hsl(38 92% 40%)" }}>
+                Segera ganti password untuk keamanan akun. Password default mudah ditebak dan membahayakan sistem.
+              </p>
+            </div>
+            <button
+              onClick={() => setShowChangePassword(true)}
+              className="shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold transition-opacity hover:opacity-90"
+              style={{ background: "hsl(38 92% 50%)", color: "#fff" }}
+            >
+              Ganti Sekarang
+            </button>
+          </div>
+        )}
+
         {/* ── Page content ── */}
         <div className="p-4 sm:p-5 lg:p-6 space-y-5">
           {loading ? (
@@ -251,6 +281,17 @@ export default function Dashboard() {
           )}
         </div>
       </main>
+
+      {showChangePassword && (
+        <ChangePasswordModal
+          forceChange={false}
+          onClose={() => setShowChangePassword(false)}
+          onSuccess={async () => {
+            await refreshUser();
+            setShowChangePassword(false);
+          }}
+        />
+      )}
     </div>
   );
 }

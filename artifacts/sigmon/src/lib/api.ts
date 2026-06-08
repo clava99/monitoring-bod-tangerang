@@ -55,6 +55,11 @@ export const api = {
         body: JSON.stringify({ username, password }),
       }),
     me: () => request<any>("/auth/me"),
+    changePassword: (current_password: string, new_password: string) =>
+      request<any>("/auth/change-password", {
+        method: "POST",
+        body: JSON.stringify({ current_password, new_password }),
+      }),
     createUser: (data: any) =>
       request<any>("/auth/users", { method: "POST", body: JSON.stringify(data) }),
     listUsers: () => request<any[]>("/auth/users"),

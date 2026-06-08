@@ -1,15 +1,23 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import User
 from app.schemas import UserLogin, UserCreate, UserOut, Token
 from app.auth import verify_password, get_password_hash, create_access_token, get_current_user, require_admin
+from app.limiter import limiter
 
 router = APIRouter()
 
 
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str
+
+
 @router.post("/login", response_model=Token)
-def login(data: UserLogin, db: Session = Depends(get_db)):
+@limiter.limit("10/minute")
+def login(request: Request, data: UserLogin, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.username == data.username, User.is_active == True).first()
     if not user or not verify_password(data.password, user.hashed_password):
         raise HTTPException(
@@ -23,6 +31,27 @@ def login(data: UserLogin, db: Session = Depends(get_db)):
 @router.get("/me", response_model=UserOut)
 def get_me(current_user: User = Depends(get_current_user)):
     return current_user
+
+
+@router.post("/change-password")
+def change_password(
+    data: ChangePasswordRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if not verify_password(data.current_password, current_user.hashed_password):
+        raise HTTPException(status_code=400, detail="Password lama tidak sesuai")
+    if len(data.new_password) < 8:
+        raise HTTPException(status_code=400, detail="Password baru minimal 8 karakter")
+    if not any(c.isupper() for c in data.new_password):
+        raise HTTPException(status_code=400, detail="Password baru harus mengandung huruf besar")
+    if not any(c.isdigit() for c in data.new_password):
+        raise HTTPException(status_code=400, detail="Password baru harus mengandung angka")
+
+    current_user.hashed_password = get_password_hash(data.new_password)
+    current_user.password_changed = True
+    db.commit()
+    return {"message": "Password berhasil diperbarui"}
 
 
 @router.post("/users", response_model=UserOut)
@@ -41,6 +70,7 @@ def create_user(
         email=data.email,
         hashed_password=get_password_hash(data.password),
         role=data.role,
+        password_changed=False,
     )
     db.add(user)
     db.commit()

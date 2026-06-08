@@ -8,8 +8,12 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from sqlalchemy import text
 
 from app.database import engine, Base, SessionLocal
+from app.limiter import limiter
 from app.routers import (
     auth_router,
     dashboard_router,
@@ -18,6 +22,20 @@ from app.routers import (
     export_router,
     config_router,
 )
+
+
+def _run_migrations():
+    with engine.connect() as conn:
+        conn.execute(text(
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS password_changed BOOLEAN NOT NULL DEFAULT FALSE"
+        ))
+        conn.commit()
+
+
+try:
+    _run_migrations()
+except Exception:
+    pass
 
 Base.metadata.create_all(bind=engine)
 
@@ -34,7 +52,13 @@ def _seed_default_users():
         ]
         for username, email, password, role in defaults:
             if not db.query(User).filter(User.username == username).first():
-                db.add(User(username=username, email=email, hashed_password=get_password_hash(password), role=role))
+                db.add(User(
+                    username=username,
+                    email=email,
+                    hashed_password=get_password_hash(password),
+                    role=role,
+                    password_changed=False,
+                ))
         db.commit()
     finally:
         db.close()
@@ -49,6 +73,9 @@ app = FastAPI(
     redoc_url="/api/redoc",
     openapi_url="/api/openapi.json",
 )
+
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 _default_origins = "http://localhost:5000,http://localhost:5173,http://localhost:8080"
 _replit_domain = os.environ.get("REPLIT_DEV_DOMAIN")
@@ -87,10 +114,6 @@ if static_dir.exists():
 
     @app.get("/{full_path:path}", include_in_schema=False)
     def serve_frontend(full_path: str):
-        """
-        Catch-all: semua URL yang bukan /api/* dikembalikan ke index.html
-        sehingga React Router bisa handle navigasi sisi klien.
-        """
         index_file = static_dir / "index.html"
         if index_file.exists():
             return FileResponse(str(index_file))

@@ -21,6 +21,7 @@ class UserOut(BaseModel):
     email: str
     role: str
     is_active: bool
+    password_changed: bool = False
     created_at: datetime
 
     class Config:
