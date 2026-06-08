@@ -13,8 +13,6 @@ COPY package.json ./
 COPY tsconfig.base.json ./
 COPY tsconfig.json ./
 
-COPY lib/ ./lib/
-
 WORKDIR /build/artifacts/sigmon
 COPY artifacts/sigmon/package.json ./
 
@@ -43,7 +41,7 @@ COPY --chown=user artifacts/api-server/ .
 
 COPY --chown=user --from=frontend-builder /build/artifacts/api-server/static ./static
 
-COPY --chown=user init_db.sql .
+COPY --chown=user scripts/init_db.sql .
 COPY --chown=user init_db.py .
 
 ENV PYTHONPATH=/app
