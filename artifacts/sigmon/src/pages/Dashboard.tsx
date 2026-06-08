@@ -5,6 +5,7 @@ import SummaryCards from "@/components/SummaryCards";
 import TopBottomChart from "@/components/TopBottomChart";
 import UnitsTable from "@/components/UnitsTable";
 import { SkeletonCard, SkeletonChart, SkeletonTable } from "@/components/SkeletonLoader";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { RefreshCw, Download, Filter } from "lucide-react";
 
 const METRICS = [
@@ -83,6 +84,7 @@ export default function Dashboard() {
               </p>
             </div>
             <div className="flex items-center gap-2 shrink-0">
+              <ThemeToggle variant="header" />
               <button
                 onClick={() => fetchAll(true)}
                 disabled={refreshing}
