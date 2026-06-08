@@ -32,10 +32,10 @@ interface CardProps {
 
 function StatCard({ label, value, sub, icon, accent = "blue" }: CardProps) {
   const colors: Record<string, string> = {
-    blue:  "bg-blue-50 text-blue-600",
-    green: "bg-emerald-50 text-emerald-600",
-    red:   "bg-red-50 text-red-500",
-    amber: "bg-amber-50 text-amber-600",
+    blue:  "bg-blue-50 text-blue-600 dark:bg-blue-500/15 dark:text-blue-400",
+    green: "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400",
+    red:   "bg-red-50 text-red-500 dark:bg-red-500/15 dark:text-red-400",
+    amber: "bg-amber-50 text-amber-600 dark:bg-amber-500/15 dark:text-amber-400",
   };
   return (
     <div className="stat-card">

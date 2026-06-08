@@ -58,7 +58,7 @@ function LogRow({ log }: { log: any }) {
   const ok = log.status === "success";
   return (
     <div className="flex items-center gap-4 px-5 py-3.5 border-b border-border last:border-0">
-      <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${ok ? "bg-emerald-50" : "bg-red-50"}`}>
+      <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${ok ? "bg-emerald-50 dark:bg-emerald-500/15" : "bg-red-50 dark:bg-red-500/15"}`}>
         {ok ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <XCircle className="w-4 h-4 text-red-500" />}
       </div>
       <div className="flex-1 min-w-0">
@@ -70,7 +70,7 @@ function LogRow({ log }: { log: any }) {
         </p>
       </div>
       <div className="text-right shrink-0">
-        <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${ok ? "bg-emerald-50 text-emerald-600" : "bg-red-50 text-red-500"}`}>
+        <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${ok ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400" : "bg-red-50 text-red-500 dark:bg-red-500/15 dark:text-red-400"}`}>
           {ok ? "Berhasil" : "Gagal"}
         </span>
         <p className="text-xs text-muted-foreground mt-1">
@@ -179,8 +179,8 @@ export default function Import() {
   };
 
   const urlTypeBadge = (type?: string) => {
-    if (type === "apps_script") return { label: "Apps Script API", color: "bg-violet-50 text-violet-700" };
-    if (type === "spreadsheet") return { label: "Spreadsheet (Public)", color: "bg-blue-50 text-blue-700" };
+    if (type === "apps_script") return { label: "Apps Script API", color: "bg-violet-50 text-violet-700 dark:bg-violet-500/15 dark:text-violet-400" };
+    if (type === "spreadsheet") return { label: "Spreadsheet (Public)", color: "bg-blue-50 text-blue-700 dark:bg-blue-500/15 dark:text-blue-400" };
     return null;
   };
 
@@ -270,11 +270,11 @@ export default function Import() {
                       </div>
                     ))}
 
-                    <div className="p-4 rounded-xl bg-amber-50 border border-amber-100 flex gap-3">
-                      <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                    <div className="p-4 rounded-xl bg-amber-50 border border-amber-100 dark:bg-amber-500/10 dark:border-amber-500/20 flex gap-3">
+                      <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
                       <div>
-                        <p className="text-xs font-semibold text-amber-700">Catatan penting</p>
-                        <p className="text-xs text-amber-600 mt-0.5 leading-relaxed">
+                        <p className="text-xs font-semibold text-amber-700 dark:text-amber-400">Catatan penting</p>
+                        <p className="text-xs text-amber-600 dark:text-amber-400/80 mt-0.5 leading-relaxed">
                           Setiap kali kamu mengubah kode Apps Script, kamu harus membuat deployment baru (bukan mengupdate yang lama) agar URL baru menggunakan kode terbaru. URL lama tetap bisa digunakan selama tidak dihapus.
                         </p>
                       </div>
@@ -300,7 +300,7 @@ export default function Import() {
                         Ubah URL
                       </button>
                       <button onClick={handleClearConfig}
-                        className="p-1.5 border border-red-200 text-red-500 rounded-lg hover:bg-red-50 transition-colors">
+                        className="p-1.5 border border-red-200 dark:border-red-500/30 text-red-500 dark:text-red-400 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors">
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
@@ -313,11 +313,11 @@ export default function Import() {
                   ) : sheetsConfig?.is_configured && !editingConfig ? (
                     /* === Configured: show sync panel === */
                     <div className="space-y-4">
-                      <div className="flex items-start gap-3 p-4 rounded-xl bg-emerald-50 border border-emerald-100">
-                        <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
+                      <div className="flex items-start gap-3 p-4 rounded-xl bg-emerald-50 border border-emerald-100 dark:bg-emerald-500/10 dark:border-emerald-500/20">
+                        <CheckCircle2 className="w-5 h-5 text-emerald-500 dark:text-emerald-400 shrink-0 mt-0.5" />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <p className="text-sm font-semibold text-emerald-700">Sumber data terhubung</p>
+                            <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">Sumber data terhubung</p>
                             {urlTypeBadge(sheetsConfig.url_type) && (
                               <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${urlTypeBadge(sheetsConfig.url_type)!.color}`}>
                                 {urlTypeBadge(sheetsConfig.url_type)!.label}
@@ -325,11 +325,11 @@ export default function Import() {
                             )}
                           </div>
                           <a href={sheetsConfig.spreadsheet_url} target="_blank" rel="noopener noreferrer"
-                            className="text-xs text-emerald-600 hover:underline flex items-center gap-1 mt-1.5">
+                            className="text-xs text-emerald-600 dark:text-emerald-400/80 hover:underline flex items-center gap-1 mt-1.5">
                             <ExternalLink className="w-3 h-3 shrink-0" />
                             <span className="truncate max-w-sm">{sheetsConfig.spreadsheet_url}</span>
                           </a>
-                          <div className="flex flex-wrap gap-4 mt-2 text-xs text-emerald-600">
+                          <div className="flex flex-wrap gap-4 mt-2 text-xs text-emerald-600 dark:text-emerald-400/80">
                             {sheetsConfig.url_type === "spreadsheet" && (
                               <span>Sheet: <strong>{sheetsConfig.sheet_name}</strong></span>
                             )}
@@ -341,9 +341,9 @@ export default function Import() {
                       </div>
 
                       {sheetsConfig.url_type === "spreadsheet" && (
-                        <div className="flex items-center gap-2 p-3.5 rounded-lg bg-amber-50 border border-amber-100">
-                          <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
-                          <p className="text-xs text-amber-700">
+                        <div className="flex items-center gap-2 p-3.5 rounded-lg bg-amber-50 border border-amber-100 dark:bg-amber-500/10 dark:border-amber-500/20">
+                          <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
+                          <p className="text-xs text-amber-700 dark:text-amber-400">
                             Menggunakan URL spreadsheet biasa memerlukan spreadsheet <strong>public</strong>.
                             Untuk keamanan lebih baik, gunakan <button onClick={() => setShowGuide(true)} className="underline font-medium">Google Apps Script</button>.
                           </p>
@@ -364,20 +364,20 @@ export default function Import() {
                             <p className="text-xs text-muted-foreground">Data terbaru akan langsung masuk ke dashboard</p>
                           </div>
                           {syncResult && (
-                            <div className="flex items-center gap-3 p-3.5 rounded-lg bg-emerald-50 border border-emerald-100">
-                              <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
+                            <div className="flex items-center gap-3 p-3.5 rounded-lg bg-emerald-50 border border-emerald-100 dark:bg-emerald-500/10 dark:border-emerald-500/20">
+                              <CheckCircle2 className="w-5 h-5 text-emerald-500 dark:text-emerald-400 shrink-0" />
                               <div>
-                                <p className="text-sm font-semibold text-emerald-700">Sinkronisasi berhasil!</p>
-                                <p className="text-xs text-emerald-600 mt-0.5">{syncResult.records_count} data berhasil diperbarui dari sumber</p>
+                                <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">Sinkronisasi berhasil!</p>
+                                <p className="text-xs text-emerald-600 dark:text-emerald-400/80 mt-0.5">{syncResult.records_count} data berhasil diperbarui dari sumber</p>
                               </div>
                             </div>
                           )}
                           {syncError && (
-                            <div className="flex items-start gap-3 p-3.5 rounded-lg bg-red-50 border border-red-100">
-                              <XCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+                            <div className="flex items-start gap-3 p-3.5 rounded-lg bg-red-50 border border-red-100 dark:bg-red-500/10 dark:border-red-500/20">
+                              <XCircle className="w-5 h-5 text-red-500 dark:text-red-400 shrink-0 mt-0.5" />
                               <div>
-                                <p className="text-sm font-semibold text-red-600">Sinkronisasi gagal</p>
-                                <p className="text-xs text-red-500 mt-0.5">{syncError}</p>
+                                <p className="text-sm font-semibold text-red-600 dark:text-red-400">Sinkronisasi gagal</p>
+                                <p className="text-xs text-red-500 dark:text-red-400/80 mt-0.5">{syncError}</p>
                               </div>
                             </div>
                           )}
@@ -495,18 +495,18 @@ export default function Import() {
                   </div>
                 </div>
                 {uploadResult && (
-                  <div className="flex items-center gap-3 p-3.5 rounded-lg bg-emerald-50 border border-emerald-100">
-                    <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
+                  <div className="flex items-center gap-3 p-3.5 rounded-lg bg-emerald-50 border border-emerald-100 dark:bg-emerald-500/10 dark:border-emerald-500/20">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-500 dark:text-emerald-400 shrink-0" />
                     <div>
-                      <p className="text-sm font-semibold text-emerald-700">Berhasil!</p>
-                      <p className="text-xs text-emerald-600 mt-0.5">{uploadResult.records_count} data berhasil diimport</p>
+                      <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">Berhasil!</p>
+                      <p className="text-xs text-emerald-600 dark:text-emerald-400/80 mt-0.5">{uploadResult.records_count} data berhasil diimport</p>
                     </div>
                   </div>
                 )}
                 {uploadError && (
-                  <div className="flex items-center gap-3 p-3.5 rounded-lg bg-red-50 border border-red-100">
-                    <XCircle className="w-5 h-5 text-red-500 shrink-0" />
-                    <p className="text-sm text-red-600">{uploadError}</p>
+                  <div className="flex items-center gap-3 p-3.5 rounded-lg bg-red-50 border border-red-100 dark:bg-red-500/10 dark:border-red-500/20">
+                    <XCircle className="w-5 h-5 text-red-500 dark:text-red-400 shrink-0" />
+                    <p className="text-sm text-red-600 dark:text-red-400">{uploadError}</p>
                   </div>
                 )}
                 <button type="submit" disabled={!file || uploading}

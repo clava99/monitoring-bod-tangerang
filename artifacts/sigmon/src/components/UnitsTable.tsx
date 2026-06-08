@@ -92,7 +92,7 @@ export default function UnitsTable({
       <div className="overflow-x-auto">
         <table className="w-full text-xs min-w-[540px]">
           <thead>
-            <tr className="border-b border-border" style={{ background: "hsl(210 40% 98%)" }}>
+            <tr className="border-b border-border bg-muted/50">
               <th className="px-3 py-2.5 text-left text-muted-foreground font-medium w-7">#</th>
               {COLS.map(col => (
                 <th key={col.key}
