@@ -233,14 +233,14 @@ export default function Units() {
                   <button
                     onClick={() => setSelectMode(true)}
                     disabled={!units?.total}
-                    className="flex items-center gap-1.5 px-3 py-2 bg-muted text-foreground border border-border text-xs font-medium rounded-lg hover:bg-muted/70 disabled:opacity-40 transition-colors">
+                    className="flex items-center gap-1.5 px-3 py-2 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 disabled:opacity-40 transition-colors">
                     <MousePointerClick className="w-3.5 h-3.5" />
                     Select
                   </button>
                   <button
                     onClick={() => setConfirmModal({ open: true, type: "all" })}
                     disabled={bulkDeleting || !units?.total}
-                    className="flex items-center gap-1.5 px-3 py-2 bg-red-50 text-red-600 border border-red-200 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20 text-xs font-medium rounded-lg hover:bg-red-100 dark:hover:bg-red-500/15 disabled:opacity-40 transition-colors">
+                    className="flex items-center gap-1.5 px-3 py-2 bg-red-600 text-white text-xs font-medium rounded-lg hover:bg-red-700 disabled:opacity-40 transition-colors">
                     {bulkDeleting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
                     Delete All
                   </button>
@@ -317,7 +317,7 @@ export default function Units() {
             <div className="overflow-x-auto">
               <table className="w-full text-xs">
                 <thead>
-                  <tr className="border-b border-border" style={{ background: "hsl(210 40% 98%)" }}>
+                  <tr className="border-b border-border bg-muted/50">
                     {selectMode && (
                       <th className="px-4 py-3 w-10">
                         <button
@@ -354,7 +354,7 @@ export default function Units() {
                     <tr
                       key={row.id}
                       onClick={selectMode ? () => toggleSelect(row.id) : undefined}
-                      className={`transition-colors ${selectMode ? "cursor-pointer" : "hover:bg-muted/20"} ${selected.has(row.id) ? "bg-red-50" : selectMode ? "hover:bg-muted/20" : ""}`}>
+                      className={`transition-colors ${selectMode ? "cursor-pointer" : "hover:bg-muted/20"} ${selected.has(row.id) ? "bg-red-500/10" : selectMode ? "hover:bg-muted/20" : ""}`}>
                       {selectMode && (
                         <td className="px-4 py-3">
                           <div className="flex items-center justify-center">
