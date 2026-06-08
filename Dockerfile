@@ -3,12 +3,12 @@
 # ═══════════════════════════════════════════════════
 FROM node:22-slim AS frontend-builder
 
-RUN npm install -g pnpm@latest
+RUN npm install -g pnpm@10.26.1
 
 WORKDIR /build
 
 COPY pnpm-workspace.yaml ./
-COPY pnpm-lock.yaml* ./
+COPY pnpm-lock.yaml ./
 COPY package.json ./
 COPY tsconfig.base.json ./
 COPY tsconfig.json ./
@@ -16,12 +16,18 @@ COPY tsconfig.json ./
 WORKDIR /build/artifacts/sigmon
 COPY artifacts/sigmon/package.json ./
 
+WORKDIR /build/artifacts/mockup-sandbox
+COPY artifacts/mockup-sandbox/package.json ./
+
+WORKDIR /build/scripts
+COPY scripts/package.json ./
+
 WORKDIR /build
-RUN pnpm install --frozen-lockfile 2>/dev/null || pnpm install
+RUN pnpm install --frozen-lockfile
 
 WORKDIR /build/artifacts/sigmon
 COPY artifacts/sigmon/ ./
-RUN pnpm build
+RUN pnpm --filter @workspace/sigmon build
 
 # ═══════════════════════════════════════════════════
 # Stage 2: Python FastAPI server + hasil build React
