@@ -25,13 +25,15 @@ function Badge({ severity }: { severity: string }) {
   if (severity === "critical") {
     return (
       <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[9px] font-bold bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400 uppercase tracking-wide">
-        <XCircle className="w-2.5 h-2.5" /> Kritis
+        <XCircle className="w-2.5 h-2.5" />
+        <span>Kritis</span>
       </span>
     );
   }
   return (
     <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[9px] font-bold bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 uppercase tracking-wide">
-      <AlertCircle className="w-2.5 h-2.5" /> Perhatian
+      <AlertCircle className="w-2.5 h-2.5" />
+      <span>Perhatian</span>
     </span>
   );
 }
@@ -65,11 +67,16 @@ export default function AlertPanel({ alerts }: Props) {
               </span>
             </div>
             <p className="text-xs text-muted-foreground mt-0.5">
-              {critical.length} kritis · {warning.length} perlu perhatian
+              <span>{critical.length} kritis</span>
+              <span> · </span>
+              <span>{warning.length} perlu perhatian</span>
             </p>
           </div>
         </div>
-        {expanded ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+        {expanded
+          ? <ChevronUp className="w-4 h-4 text-muted-foreground" />
+          : <ChevronDown className="w-4 h-4 text-muted-foreground" />
+        }
       </button>
 
       {expanded && (
@@ -104,10 +111,11 @@ export default function AlertPanel({ alerts }: Props) {
                       ))}
                     </div>
                   </div>
-                  <Link href={`/units/${unit.id}`}>
-                    <a className="shrink-0 mt-0.5 p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors">
-                      <ExternalLink className="w-3.5 h-3.5" />
-                    </a>
+                  <Link
+                    href={`/units/${unit.id}`}
+                    className="shrink-0 mt-0.5 p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
                   </Link>
                 </div>
               ))}
@@ -121,9 +129,15 @@ export default function AlertPanel({ alerts }: Props) {
                 className="text-xs text-primary hover:underline font-medium flex items-center gap-1"
               >
                 {showAll ? (
-                  <><ChevronUp className="w-3 h-3" /> Tampilkan lebih sedikit</>
+                  <>
+                    <ChevronUp className="w-3 h-3" />
+                    <span>Tampilkan lebih sedikit</span>
+                  </>
                 ) : (
-                  <><ChevronDown className="w-3 h-3" /> Tampilkan {alerts.length - 6} unit lainnya</>
+                  <>
+                    <ChevronDown className="w-3 h-3" />
+                    <span>Tampilkan {alerts.length - 6} unit lainnya</span>
+                  </>
                 )}
               </button>
             </div>

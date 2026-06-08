@@ -74,16 +74,16 @@ export default function Sidebar() {
         {navItems.map(({ href, label, icon: Icon }) => {
           const active = href === "/" ? location === "/" : location.startsWith(href);
           return (
-            <Link key={href} href={href}>
-              <a
-                className={`sidebar-link ${active ? "active" : ""}`}
-                style={active ? {} : { color: isDark ? "rgba(203,213,225,0.7)" : "rgba(51,65,85,0.7)" }}
-                onClick={() => setOpen(false)}
-              >
-                <Icon className="w-4 h-4 shrink-0" />
-                <span>{label}</span>
-                {active && <ChevronRight className="w-3 h-3 ml-auto opacity-60" />}
-              </a>
+            <Link
+              key={href}
+              href={href}
+              className={`sidebar-link ${active ? "active" : ""}`}
+              style={active ? {} : { color: isDark ? "rgba(203,213,225,0.7)" : "rgba(51,65,85,0.7)" }}
+              onClick={() => setOpen(false)}
+            >
+              <Icon className="w-4 h-4 shrink-0" />
+              <span>{label}</span>
+              {active && <ChevronRight className="w-3 h-3 ml-auto opacity-60" />}
             </Link>
           );
         })}
@@ -94,15 +94,15 @@ export default function Sidebar() {
             {adminItems.map(({ href, label, icon: Icon }) => {
               const active = location.startsWith(href);
               return (
-                <Link key={href} href={href}>
-                  <a
-                    className={`sidebar-link ${active ? "active" : ""}`}
-                    style={active ? {} : { color: isDark ? "rgba(203,213,225,0.7)" : "rgba(51,65,85,0.7)" }}
-                    onClick={() => setOpen(false)}
-                  >
-                    <Icon className="w-4 h-4 shrink-0" />
-                    <span>{label}</span>
-                  </a>
+                <Link
+                  key={href}
+                  href={href}
+                  className={`sidebar-link ${active ? "active" : ""}`}
+                  style={active ? {} : { color: isDark ? "rgba(203,213,225,0.7)" : "rgba(51,65,85,0.7)" }}
+                  onClick={() => setOpen(false)}
+                >
+                  <Icon className="w-4 h-4 shrink-0" />
+                  <span>{label}</span>
                 </Link>
               );
             })}
