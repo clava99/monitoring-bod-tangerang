@@ -19,6 +19,21 @@ def hash_password(password: str) -> str:
     return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
 
 
+def run_migrations():
+    """Tambah kolom baru ke tabel yang sudah ada (idempotent)."""
+    migrations = [
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS password_changed BOOLEAN NOT NULL DEFAULT FALSE",
+    ]
+    with engine.connect() as conn:
+        for sql in migrations:
+            try:
+                conn.execute(text(sql))
+            except Exception as e:
+                print(f"Migration skip (mungkin tabel belum ada): {e}")
+        conn.commit()
+    print("Migrations selesai.")
+
+
 def seed_users(db: Session):
     existing = db.query(User).filter(User.username == "admin").first()
     if existing:
@@ -32,6 +47,7 @@ def seed_users(db: Session):
             hashed_password=hash_password("admin123"),
             role="admin",
             is_active=True,
+            password_changed=False,
         ),
         User(
             username="manager",
@@ -39,6 +55,7 @@ def seed_users(db: Session):
             hashed_password=hash_password("admin123"),
             role="manager",
             is_active=True,
+            password_changed=False,
         ),
         User(
             username="staff",
@@ -46,6 +63,7 @@ def seed_users(db: Session):
             hashed_password=hash_password("admin123"),
             role="staff",
             is_active=True,
+            password_changed=False,
         ),
     ]
     db.add_all(users)
@@ -75,6 +93,9 @@ def seed_config(db: Session):
 def main():
     db_url = os.environ.get("DATABASE_URL", "")
     print(f"Database URL: {db_url[:30]}..." if len(db_url) > 30 else f"Database URL: {db_url}")
+
+    print("Menjalankan migrations...")
+    run_migrations()
 
     print("Membuat tabel jika belum ada...")
     Base.metadata.create_all(bind=engine)
