@@ -9,6 +9,7 @@ bcrypt==5.0.0
 python-multipart==0.0.32
 openpyxl==3.1.5
 requests==2.34.2
+pandas
 slowapi==0.1.9
 limits==5.8.0
 deprecated==1.3.1
