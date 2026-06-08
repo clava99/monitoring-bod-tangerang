@@ -101,11 +101,65 @@
   --radius: 0.625rem;
 }
 
+.dark {
+  --background: 222 47% 7%;
+  --foreground: 210 40% 94%;
+  --border: 222 47% 16%;
+  --input: 222 47% 13%;
+  --ring: 217 91% 60%;
+
+  --card: 222 47% 10%;
+  --card-foreground: 210 40% 94%;
+  --card-border: 222 47% 16%;
+
+  --popover: 222 47% 10%;
+  --popover-foreground: 210 40% 94%;
+  --popover-border: 222 47% 18%;
+
+  --primary: 217 91% 60%;
+  --primary-foreground: 0 0% 100%;
+  --primary-border: hsl(217 91% 52%);
+
+  --secondary: 222 47% 14%;
+  --secondary-foreground: 210 40% 90%;
+  --secondary-border: hsl(222 47% 20%);
+
+  --muted: 222 47% 13%;
+  --muted-foreground: 215 16% 56%;
+  --muted-border: hsl(222 47% 18%);
+
+  --accent: 222 47% 16%;
+  --accent-foreground: 210 40% 94%;
+  --accent-border: hsl(222 47% 22%);
+
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
+  --destructive-border: hsl(0 84% 52%);
+
+  --sidebar: 222 47% 5%;
+  --sidebar-foreground: 210 40% 90%;
+  --sidebar-border: 222 47% 10%;
+  --sidebar-primary: 217 91% 60%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 222 47% 12%;
+  --sidebar-accent-foreground: 210 40% 90%;
+  --sidebar-ring: 217 91% 60%;
+  --sidebar-primary-border: hsl(217 91% 52%);
+  --sidebar-accent-border: hsl(222 47% 18%);
+
+  --chart-1: 217 91% 60%;
+  --chart-2: 142 71% 45%;
+  --chart-3: 0 84% 60%;
+  --chart-4: 38 92% 50%;
+  --chart-5: 271 81% 56%;
+}
+
 @layer base {
   * { @apply border-border; box-sizing: border-box; }
   body {
     @apply font-sans antialiased bg-background text-foreground;
     min-height: 100vh;
+    transition: background-color 0.3s ease, color 0.2s ease;
   }
 }
 
@@ -142,6 +196,11 @@ input, select, textarea { font-size: 16px !important; }
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
   border-radius: 6px;
+}
+.dark .skeleton {
+  background: linear-gradient(90deg, hsl(222 47% 13%) 25%, hsl(222 47% 17%) 50%, hsl(222 47% 13%) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
 }
 
 .sidebar-link {

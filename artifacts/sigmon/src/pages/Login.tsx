@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/contexts/AuthContext";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 
 /* ── Minimal 3D canvas animation ── */
@@ -224,7 +225,7 @@ export default function Login() {
         }
       `}</style>
 
-      <div className="min-h-screen flex" style={{ background: "hsl(210 20% 98%)" }}>
+      <div className="min-h-screen flex" style={{ background: "hsl(var(--background))" }}>
 
         {/* ── Left panel ── */}
         <div
@@ -279,28 +280,33 @@ export default function Login() {
         </div>
 
         {/* ── Right panel ── */}
-        <div className="flex-1 flex items-center justify-center p-8">
+        <div className="flex-1 flex items-center justify-center p-8" style={{ position: "relative" }}>
+          {/* Theme toggle — top right */}
+          <div style={{ position: "absolute", top: 16, right: 16, zIndex: 10 }}>
+            <ThemeToggle variant="floating" />
+          </div>
+
           <div className="login-form-wrap w-full" style={{ maxWidth: 360 }}>
 
             {/* Mobile brand */}
             <div className="flex items-center gap-2 mb-8 lg:hidden">
               <LogoIcon size={32} />
-              <span style={{ fontWeight: 700, fontSize: 17, color: "hsl(222 47% 11%)", letterSpacing: 1.5 }}>
+              <span style={{ fontWeight: 700, fontSize: 17, color: "hsl(var(--foreground))", letterSpacing: 1.5 }}>
                 SIGMON
               </span>
             </div>
 
-            <h2 style={{ fontSize: 24, fontWeight: 700, color: "hsl(222 47% 11%)", marginBottom: 4 }}>
+            <h2 style={{ fontSize: 24, fontWeight: 700, color: "hsl(var(--foreground))", marginBottom: 4 }}>
               Masuk
             </h2>
-            <p style={{ fontSize: 13.5, color: "hsl(215 16% 47%)", marginBottom: 28 }}>
+            <p style={{ fontSize: 13.5, color: "hsl(var(--muted-foreground))", marginBottom: 28 }}>
               Masukkan kredensial Anda untuk mengakses dashboard
             </p>
 
             <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
               {/* Username */}
               <div>
-                <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: "hsl(222 47% 22%)", marginBottom: 6 }}>
+                <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: "hsl(var(--foreground))", marginBottom: 6 }}>
                   Username
                 </label>
                 <input
@@ -314,10 +320,10 @@ export default function Login() {
                     width: "100%",
                     padding: "10px 14px",
                     fontSize: 14,
-                    border: "1px solid hsl(214 32% 88%)",
+                    border: "1px solid hsl(var(--border))",
                     borderRadius: 10,
-                    background: "hsl(210 40% 98%)",
-                    color: "hsl(222 47% 11%)",
+                    background: "hsl(var(--input))",
+                    color: "hsl(var(--foreground))",
                     boxSizing: "border-box",
                   }}
                 />
@@ -325,7 +331,7 @@ export default function Login() {
 
               {/* Password */}
               <div>
-                <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: "hsl(222 47% 22%)", marginBottom: 6 }}>
+                <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: "hsl(var(--foreground))", marginBottom: 6 }}>
                   Password
                 </label>
                 <div style={{ position: "relative" }}>
@@ -340,10 +346,10 @@ export default function Login() {
                       width: "100%",
                       padding: "10px 40px 10px 14px",
                       fontSize: 14,
-                      border: "1px solid hsl(214 32% 88%)",
+                      border: "1px solid hsl(var(--border))",
                       borderRadius: 10,
-                      background: "hsl(210 40% 98%)",
-                      color: "hsl(222 47% 11%)",
+                      background: "hsl(var(--input))",
+                      color: "hsl(var(--foreground))",
                       boxSizing: "border-box",
                     }}
                   />
@@ -358,7 +364,7 @@ export default function Login() {
                       background: "none",
                       border: "none",
                       cursor: "pointer",
-                      color: "hsl(215 16% 60%)",
+                      color: "hsl(var(--muted-foreground))",
                       display: "flex",
                       alignItems: "center",
                     }}
@@ -373,8 +379,8 @@ export default function Login() {
                 <div style={{
                   padding: "10px 14px",
                   borderRadius: 8,
-                  background: "#fef2f2",
-                  border: "1px solid #fecaca",
+                  background: "hsl(0 84% 97%)",
+                  border: "1px solid hsl(0 84% 88%)",
                 }}>
                   <p style={{ fontSize: 12, color: "#dc2626" }}>{error}</p>
                 </div>

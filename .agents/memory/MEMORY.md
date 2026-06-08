@@ -1,2 +1,3 @@
 - [FastAPI JWT fix](fastapi-jwt.md) — JWT sub must be str not int; bcrypt must be used directly (not passlib) in Python 3.11
 - [Excel parsing layout](excel-parsing.md) — header row at index 2 (WILAYAH/REGION/UNIT), data starts row 4; column indices hardcoded
+- [Theme system](theme-system.md) — custom ThemeContext (no next-themes) toggling .dark class on <html>; CSS vars in index.css; ThemeToggle has sidebar + floating variants

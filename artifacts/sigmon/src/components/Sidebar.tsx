@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/contexts/AuthContext";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import {
   LayoutDashboard, Upload, Table2, LogOut,
   Activity, Users, ChevronRight, Menu, X
@@ -23,7 +24,7 @@ export default function Sidebar() {
 
   const NavContent = () => (
     <>
-      <div className="px-5 py-5 border-b flex items-center gap-3" style={{ borderColor: "hsl(222 47% 15%)" }}>
+      <div className="px-5 py-5 border-b flex items-center gap-3" style={{ borderColor: "hsl(var(--sidebar-border))" }}>
         <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
           style={{ background: "hsl(217 91% 60%)" }}>
           <Activity className="w-4 h-4 text-white" />
@@ -72,8 +73,22 @@ export default function Sidebar() {
         )}
       </nav>
 
-      <div className="px-3 py-4 border-t" style={{ borderColor: "hsl(222 47% 15%)" }}>
-        <div className="px-3 py-2 rounded-lg mb-2" style={{ background: "hsl(222 47% 14%)" }}>
+      <div className="px-3 py-4 border-t" style={{ borderColor: "hsl(var(--sidebar-border))" }}>
+        {/* Theme Toggle */}
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          marginBottom: 8,
+          padding: "4px 6px",
+          borderRadius: 10,
+          background: "rgba(255,255,255,0.04)",
+          border: "1px solid rgba(255,255,255,0.06)",
+        }}>
+          <ThemeToggle variant="sidebar" />
+        </div>
+
+        <div className="px-3 py-2 rounded-lg mb-2" style={{ background: "hsl(var(--sidebar-accent))" }}>
           <p className="text-xs font-medium text-white truncate">{user?.username}</p>
           <p className="text-xs capitalize mt-0.5" style={{ color: "hsl(215 20% 50%)" }}>{user?.role}</p>
         </div>
@@ -92,7 +107,7 @@ export default function Sidebar() {
       <button
         onClick={() => setOpen(true)}
         className="lg:hidden fixed top-3 left-3 z-50 w-10 h-10 flex items-center justify-center rounded-lg shadow-lg"
-        style={{ background: "hsl(222 47% 11%)" }}>
+        style={{ background: "hsl(var(--sidebar))" }}>
         <Menu className="w-5 h-5 text-white" />
       </button>
 
@@ -103,14 +118,14 @@ export default function Sidebar() {
 
       {/* Desktop sidebar — always visible */}
       <aside className="hidden lg:flex flex-col fixed inset-y-0 left-0 w-60 z-30"
-        style={{ background: "hsl(222 47% 11%)" }}>
+        style={{ background: "hsl(var(--sidebar))" }}>
         <NavContent />
       </aside>
 
       {/* Mobile sidebar — slide in/out */}
       <aside
         className={`lg:hidden flex flex-col fixed inset-y-0 left-0 w-72 z-50 transform transition-transform duration-250 ${open ? "translate-x-0" : "-translate-x-full"}`}
-        style={{ background: "hsl(222 47% 11%)" }}>
+        style={{ background: "hsl(var(--sidebar))" }}>
         <NavContent />
       </aside>
     </>
