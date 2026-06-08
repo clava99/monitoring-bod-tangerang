@@ -87,7 +87,7 @@ export default function AlertPanel({ alerts }: Props) {
                     <div className="flex items-center gap-2 flex-wrap">
                       <Badge severity={unit.severity} />
                       <span className="text-xs font-semibold text-foreground truncate">
-                        {unit.unit.replace(/^M\.[A-Z0-9]+- /, "")}
+                        {(unit.unit ?? "").replace(/^M\.[A-Z0-9]+- /, "")}
                       </span>
                     </div>
                     <p className="text-[10px] text-muted-foreground mt-0.5">
