@@ -9,6 +9,9 @@ import Dashboard from "@/pages/Dashboard";
 import Import from "@/pages/Import";
 import Units from "@/pages/Units";
 import Users from "@/pages/Users";
+import UnitDetail from "@/pages/UnitDetail";
+import ExecutiveSummary from "@/pages/ExecutiveSummary";
+import RiskPage from "@/pages/RiskPage";
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 5 * 60 * 1000, refetchOnWindowFocus: false } },
@@ -35,7 +38,10 @@ function Router() {
       <Route path="/login" component={() => <PublicRoute component={Login} />} />
       <Route path="/" component={() => <ProtectedRoute component={Dashboard} />} />
       <Route path="/units" component={() => <ProtectedRoute component={Units} />} />
+      <Route path="/units/:id" component={() => <ProtectedRoute component={UnitDetail} />} />
       <Route path="/import" component={() => <ProtectedRoute component={Import} />} />
+      <Route path="/executive" component={() => <ProtectedRoute component={ExecutiveSummary} />} />
+      <Route path="/risk" component={() => <ProtectedRoute component={RiskPage} />} />
       <Route path="/users" component={() => <ProtectedRoute component={Users} adminOnly />} />
       <Route component={() => <Redirect to="/" />} />
     </Switch>

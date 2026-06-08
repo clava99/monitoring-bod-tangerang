@@ -1,4 +1,4 @@
-import { TrendingUp, Users, Wallet, CreditCard, AlertTriangle, BarChart3 } from "lucide-react";
+import { TrendingUp, Users, Wallet, CreditCard, AlertTriangle, BarChart3, Target } from "lucide-react";
 
 interface Summary {
   total_unit: number;
@@ -7,6 +7,9 @@ interface Summary {
   total_lending: number;
   total_os_npl: number;
   avg_pct_rr: number;
+  avg_pct_noc: number;
+  avg_pct_os: number;
+  avg_pct_lending: number;
   period?: string;
 }
 
@@ -22,15 +25,45 @@ function formatNum(val: number) {
   return val.toLocaleString("id-ID");
 }
 
+function AchievementBar({ pct, label }: { pct: number; label: string }) {
+  const clamped = Math.min(pct, 100);
+  const color =
+    pct >= 100 ? "bg-emerald-500" :
+    pct >= 80  ? "bg-amber-400" :
+                 "bg-red-500";
+  const textColor =
+    pct >= 100 ? "text-emerald-600 dark:text-emerald-400" :
+    pct >= 80  ? "text-amber-600 dark:text-amber-400" :
+                 "text-red-500 dark:text-red-400";
+
+  return (
+    <div className="mt-2 space-y-1">
+      <div className="flex items-center justify-between">
+        <span className="text-[9px] text-muted-foreground font-medium uppercase tracking-wide flex items-center gap-1">
+          <Target className="w-2.5 h-2.5" /> {label}
+        </span>
+        <span className={`text-[10px] font-bold tabular-nums ${textColor}`}>{pct.toFixed(1)}%</span>
+      </div>
+      <div className="h-1 rounded-full bg-muted overflow-hidden">
+        <div
+          className={`h-full rounded-full transition-all duration-500 ${color}`}
+          style={{ width: `${clamped}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
 interface CardProps {
   label: string;
   value: string;
   sub?: string;
   icon: React.ReactNode;
   accent?: "blue" | "green" | "red" | "amber";
+  achievement?: { pct: number; label: string };
 }
 
-function StatCard({ label, value, sub, icon, accent = "blue" }: CardProps) {
+function StatCard({ label, value, sub, icon, accent = "blue", achievement }: CardProps) {
   const colors: Record<string, string> = {
     blue:  "bg-blue-50 text-blue-600 dark:bg-blue-500/15 dark:text-blue-400",
     green: "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400",
@@ -55,6 +88,9 @@ function StatCard({ label, value, sub, icon, accent = "blue" }: CardProps) {
           {icon}
         </div>
       </div>
+      {achievement && achievement.pct > 0 && (
+        <AchievementBar pct={achievement.pct} label={achievement.label} />
+      )}
     </div>
   );
 }
@@ -65,14 +101,52 @@ export default function SummaryCards({ summary }: { summary: Summary }) {
     : "0.00";
 
   return (
-    // 1 col → mobile | 2 col → tablet (md) | 3 col → desktop (lg)
     <div className="summary-cards-grid">
-      <StatCard label="Total Unit"    value={String(summary.total_unit)}           sub="Unit aktif"           icon={<BarChart3      className="w-4 h-4" />} accent="blue"  />
-      <StatCard label="Total NOC"     value={formatNum(summary.total_noc)}         sub="Nasabah aktif"        icon={<Users          className="w-4 h-4" />} accent="blue"  />
-      <StatCard label="OS Aktif"      value={formatJuta(summary.total_os_aktif)}   sub="Dalam jutaan"         icon={<Wallet         className="w-4 h-4" />} accent="blue"  />
-      <StatCard label="Total Lending" value={formatJuta(summary.total_lending)}    sub="Dalam jutaan"         icon={<CreditCard     className="w-4 h-4" />} accent="green" />
-      <StatCard label="OS NPL"        value={formatJuta(summary.total_os_npl)}     sub={`${nplRatio}% dari OS`} icon={<AlertTriangle className="w-4 h-4" />} accent="red"   />
-      <StatCard label="Rata-rata % RR" value={`${summary.avg_pct_rr.toFixed(1)}%`} sub="Tingkat pengembalian" icon={<TrendingUp    className="w-4 h-4" />} accent={summary.avg_pct_rr >= 90 ? "green" : "amber"} />
+      <StatCard
+        label="Total Unit"
+        value={String(summary.total_unit)}
+        sub="Unit aktif"
+        icon={<BarChart3 className="w-4 h-4" />}
+        accent="blue"
+      />
+      <StatCard
+        label="Total NOC"
+        value={formatNum(summary.total_noc)}
+        sub="Nasabah aktif"
+        icon={<Users className="w-4 h-4" />}
+        accent="blue"
+        achievement={summary.avg_pct_noc > 0 ? { pct: summary.avg_pct_noc, label: "Pencapaian target" } : undefined}
+      />
+      <StatCard
+        label="OS Aktif"
+        value={formatJuta(summary.total_os_aktif)}
+        sub="Dalam jutaan"
+        icon={<Wallet className="w-4 h-4" />}
+        accent="blue"
+        achievement={summary.avg_pct_os > 0 ? { pct: summary.avg_pct_os, label: "Pencapaian target" } : undefined}
+      />
+      <StatCard
+        label="Total Lending"
+        value={formatJuta(summary.total_lending)}
+        sub="Dalam jutaan"
+        icon={<CreditCard className="w-4 h-4" />}
+        accent="green"
+        achievement={summary.avg_pct_lending > 0 ? { pct: summary.avg_pct_lending, label: "Pencapaian target" } : undefined}
+      />
+      <StatCard
+        label="OS NPL"
+        value={formatJuta(summary.total_os_npl)}
+        sub={`${nplRatio}% dari OS`}
+        icon={<AlertTriangle className="w-4 h-4" />}
+        accent="red"
+      />
+      <StatCard
+        label="Rata-rata % RR"
+        value={`${summary.avg_pct_rr.toFixed(1)}%`}
+        sub="Tingkat pengembalian"
+        icon={<TrendingUp className="w-4 h-4" />}
+        accent={summary.avg_pct_rr >= 90 ? "green" : "amber"}
+      />
     </div>
   );
 }

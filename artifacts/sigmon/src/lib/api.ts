@@ -72,6 +72,20 @@ export const api = {
       return request<any>(`/dashboard/top-bottom${q}`);
     },
     filters: () => request<any>("/dashboard/filters"),
+    trend: (params?: Record<string, string>) => {
+      const q = params ? "?" + new URLSearchParams(params).toString() : "";
+      return request<any[]>(`/dashboard/trend${q}`);
+    },
+    alerts: (params?: Record<string, string>) => {
+      const q = params ? "?" + new URLSearchParams(params).toString() : "";
+      return request<any[]>(`/dashboard/alerts${q}`);
+    },
+    risk: (params?: Record<string, string>) => {
+      const q = params ? "?" + new URLSearchParams(params).toString() : "";
+      return request<any[]>(`/dashboard/risk${q}`);
+    },
+    unitHistory: (unitName: string) =>
+      request<any[]>(`/dashboard/unit-history/${encodeURIComponent(unitName)}`),
   },
 
   units: {

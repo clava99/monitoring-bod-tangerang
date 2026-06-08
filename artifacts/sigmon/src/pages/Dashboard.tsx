@@ -4,6 +4,9 @@ import Sidebar from "@/components/Sidebar";
 import SummaryCards from "@/components/SummaryCards";
 import TopBottomChart from "@/components/TopBottomChart";
 import UnitsTable from "@/components/UnitsTable";
+import TrendChart from "@/components/TrendChart";
+import AlertPanel from "@/components/AlertPanel";
+import RiskChart from "@/components/RiskChart";
 import { SkeletonCard, SkeletonChart, SkeletonTable } from "@/components/SkeletonLoader";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { RefreshCw, Download, Filter } from "lucide-react";
@@ -20,6 +23,9 @@ export default function Dashboard() {
   const [summary, setSummary] = useState<any>(null);
   const [topBottom, setTopBottom] = useState<any>(null);
   const [units, setUnits] = useState<any>(null);
+  const [trend, setTrend] = useState<any[]>([]);
+  const [alerts, setAlerts] = useState<any[]>([]);
+  const [risk, setRisk] = useState<any[]>([]);
   const [filters, setFilters] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -39,14 +45,27 @@ export default function Dashboard() {
     if (region) params.region = region;
     if (area) params.area = area;
     if (period) params.period = period;
+
+    const trendParams: Record<string, string> = {};
+    if (region) trendParams.region = region;
+    if (area) trendParams.area = area;
+
     try {
-      const [s, tb, u, f] = await Promise.all([
+      const [s, tb, u, f, tr, al, ri] = await Promise.all([
         api.dashboard.summary(params),
         api.dashboard.topBottom({ ...params, metric, n: "5" }),
         api.units.list({ ...params, page: String(page), limit: "20", search, sort_by: sortBy, sort_order: sortOrder }),
         filters ? Promise.resolve(filters) : api.dashboard.filters(),
+        api.dashboard.trend(trendParams),
+        api.dashboard.alerts(params),
+        api.dashboard.risk(params),
       ]);
-      setSummary(s); setTopBottom(tb); setUnits(u);
+      setSummary(s);
+      setTopBottom(tb);
+      setUnits(u);
+      setTrend(tr);
+      setAlerts(al);
+      setRisk(ri);
       if (!filters) setFilters(f);
     } catch (e) { console.error(e); }
     finally { setLoading(false); setRefreshing(false); }
@@ -72,8 +91,6 @@ export default function Dashboard() {
 
         {/* ── Sticky Header ── */}
         <div className="border-b border-border bg-card sticky top-0 z-10 px-4 sm:px-6 py-3 w-full overflow-hidden">
-
-          {/* Title row */}
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0 pl-1 lg:pl-0">
               <h1 className="text-sm sm:text-base font-semibold text-foreground truncate">
@@ -81,6 +98,11 @@ export default function Dashboard() {
               </h1>
               <p className="text-xs text-muted-foreground mt-0.5">
                 {summary?.period || "Semua Periode"} · Wilayah 1
+                {alerts.length > 0 && (
+                  <span className="ml-2 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400 text-[10px] font-bold">
+                    ⚠ {alerts.length} unit bermasalah
+                  </span>
+                )}
               </p>
             </div>
             <div className="flex items-center gap-2 shrink-0">
@@ -105,9 +127,8 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* ── Filter row: 2-col grid on mobile → inline on sm+ ── */}
+          {/* Filter row */}
           <div className="mt-3">
-            {/* Mobile: 2-column grid */}
             <div className="grid grid-cols-2 gap-2 sm:hidden">
               <select value={region} onChange={e => { setRegion(e.target.value); setArea(""); setPage(1); }} className={selectClass}>
                 <option value="">Semua Region</option>
@@ -125,7 +146,6 @@ export default function Dashboard() {
                 {METRICS.map(m => <option key={m.value} value={m.value}>Metrik: {m.label}</option>)}
               </select>
             </div>
-            {/* Tablet/Desktop: inline flex */}
             <div className="hidden sm:flex items-center gap-2">
               <Filter className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
               <select value={region} onChange={e => { setRegion(e.target.value); setArea(""); setPage(1); }} className="border border-border rounded-lg px-2.5 py-1.5 text-xs bg-background focus:outline-none focus:ring-2 focus:ring-primary/20">
@@ -161,9 +181,13 @@ export default function Dashboard() {
             </>
           ) : (
             <>
+              {/* 1. KPI Cards dengan % Achievement */}
               {summary && <SummaryCards summary={summary} />}
 
-              {/* Charts — full width on mobile, side-by-side on lg+ */}
+              {/* 2. Alert Panel */}
+              {alerts.length > 0 && <AlertPanel alerts={alerts} />}
+
+              {/* 3. Top/Bottom + Trend Chart */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 {topBottom && (
                   <>
@@ -181,6 +205,13 @@ export default function Dashboard() {
                 )}
               </div>
 
+              {/* 4. Trend Chart — full width */}
+              <TrendChart data={trend} />
+
+              {/* 5. Risk Chart — full width */}
+              <RiskChart data={risk} />
+
+              {/* 6. Units Table with alert highlights + detail link */}
               {units && (
                 <UnitsTable
                   data={units.data}

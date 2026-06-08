@@ -98,6 +98,9 @@ class DashboardSummary(BaseModel):
     total_lending: float
     total_os_npl: float
     avg_pct_rr: float
+    avg_pct_noc: float
+    avg_pct_os: float
+    avg_pct_lending: float
     period: Optional[str]
 
 
@@ -139,3 +142,42 @@ class SheetsImportRequest(BaseModel):
     spreadsheet_url: str
     sheet_name: Optional[str] = "Sheet1"
     period: Optional[str] = None
+
+
+class TrendDataPoint(BaseModel):
+    period: str
+    total_noc: int
+    total_os_aktif: float
+    total_lending: float
+    avg_pct_rr: float
+    avg_pct_noc: float
+    avg_pct_os: float
+    avg_pct_lending: float
+
+
+class AlertUnit(BaseModel):
+    id: int
+    unit: str
+    region: Optional[str]
+    area: Optional[str]
+    period: Optional[str]
+    pct_rr: Optional[float]
+    pct_os_npl: Optional[float]
+    pct_noc: Optional[float]
+    pct_os: Optional[float]
+    pct_lending: Optional[float]
+    os_npl: Optional[float]
+    os_aktif: Optional[float]
+    issues: List[str]
+    severity: str
+
+
+class RiskAreaData(BaseModel):
+    area: str
+    os_par: float
+    os_npl: float
+    os_lar: float
+    os_aktif: float
+    par_ratio: float
+    npl_ratio: float
+    lar_ratio: float

@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { ChevronUp, ChevronDown, ChevronsUpDown, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronUp, ChevronDown, ChevronsUpDown, Search, ChevronLeft, ChevronRight, AlertTriangle, ExternalLink } from "lucide-react";
+import { Link } from "wouter";
 
 interface Unit {
   id: number;
@@ -11,6 +12,9 @@ interface Unit {
   lending?: number;
   os_npl?: number;
   pct_rr?: number;
+  pct_noc?: number;
+  pct_os?: number;
+  pct_lending?: number;
 }
 
 interface Props {
@@ -30,11 +34,36 @@ function fmt(v?: number, decimals = 1) {
   return v.toLocaleString("id-ID", { maximumFractionDigits: decimals });
 }
 
+function fmtJt(v?: number | null) {
+  if (v == null) return "—";
+  if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}T`;
+  if (v >= 1_000) return `${(v / 1_000).toFixed(1)}M`;
+  return v.toLocaleString("id-ID", { maximumFractionDigits: 1 });
+}
+
 function pctColor(v?: number) {
   if (v == null) return "";
-  if (v >= 95) return "text-emerald-600 font-semibold";
-  if (v >= 85) return "text-amber-600";
-  return "text-red-500";
+  if (v >= 95) return "text-emerald-600 dark:text-emerald-400 font-semibold";
+  if (v >= 80) return "text-amber-600 dark:text-amber-400";
+  return "text-red-500 dark:text-red-400 font-semibold";
+}
+
+function achievColor(v?: number) {
+  if (v == null) return "";
+  const pct = v * 100;
+  if (pct >= 100) return "text-emerald-600 dark:text-emerald-400 font-semibold";
+  if (pct >= 80) return "text-amber-600 dark:text-amber-400";
+  return "text-red-500 dark:text-red-400 font-semibold";
+}
+
+function isAlert(row: Unit) {
+  const rrPct = row.pct_rr != null ? row.pct_rr * 100 : null;
+  const nplRatio = row.os_aktif && row.os_npl ? (row.os_npl / row.os_aktif) * 100 : null;
+  if (rrPct != null && rrPct < 80) return "warning";
+  if (nplRatio != null && nplRatio > 5) return "warning";
+  if (rrPct != null && rrPct < 60) return "critical";
+  if (nplRatio != null && nplRatio > 10) return "critical";
+  return null;
 }
 
 const COLS = [
@@ -46,6 +75,7 @@ const COLS = [
   { key: "lending", label: "Lending" },
   { key: "os_npl", label: "OS NPL" },
   { key: "pct_rr", label: "% RR" },
+  { key: "pct_lending", label: "% Capai" },
 ];
 
 function SortIcon({ col, sortBy, sortOrder }: { col: string; sortBy?: string; sortOrder?: string }) {
@@ -88,9 +118,9 @@ export default function UnitsTable({
         </div>
       </div>
 
-      {/* Table — scrollable */}
+      {/* Table */}
       <div className="overflow-x-auto">
-        <table className="w-full text-xs min-w-[540px]">
+        <table className="w-full text-xs min-w-[640px]">
           <thead>
             <tr className="border-b border-border bg-muted/50">
               <th className="px-3 py-2.5 text-left text-muted-foreground font-medium w-7">#</th>
@@ -104,31 +134,50 @@ export default function UnitsTable({
                   </span>
                 </th>
               ))}
+              <th className="px-3 py-2.5 text-left font-medium text-muted-foreground w-8"></th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {data.map((row, i) => (
-              <tr key={row.id} className="hover:bg-muted/30 transition-colors">
-                <td className="px-3 py-2.5 text-muted-foreground">{(page - 1) * 20 + i + 1}</td>
-                <td className="px-3 py-2.5 font-medium text-foreground max-w-[140px]">
-                  <span className="truncate block" title={row.unit}>
-                    {row.unit.replace(/^M\.[A-Z0-9]+- /, "")}
-                  </span>
-                </td>
-                <td className="px-3 py-2.5 text-muted-foreground whitespace-nowrap">{row.region || "—"}</td>
-                <td className="px-3 py-2.5 text-muted-foreground whitespace-nowrap">{row.area || "—"}</td>
-                <td className="px-3 py-2.5 text-right tabular-nums">{fmt(row.noc, 0)}</td>
-                <td className="px-3 py-2.5 text-right tabular-nums">{fmt(row.os_aktif)}</td>
-                <td className="px-3 py-2.5 text-right tabular-nums">{fmt(row.lending)}</td>
-                <td className="px-3 py-2.5 text-right tabular-nums text-red-500">{fmt(row.os_npl)}</td>
-                <td className={`px-3 py-2.5 text-right tabular-nums ${pctColor(row.pct_rr != null ? row.pct_rr * 100 : undefined)}`}>
-                  {row.pct_rr != null ? `${(row.pct_rr * 100).toFixed(1)}%` : "—"}
-                </td>
-              </tr>
-            ))}
+            {data.map((row, i) => {
+              const alertStatus = isAlert(row);
+              return (
+                <tr key={row.id}
+                  className={`hover:bg-muted/30 transition-colors ${alertStatus === "critical" ? "bg-red-50/40 dark:bg-red-950/20 border-l-2 border-l-red-500" : alertStatus === "warning" ? "bg-amber-50/30 dark:bg-amber-950/10 border-l-2 border-l-amber-400" : ""}`}>
+                  <td className="px-3 py-2.5 text-muted-foreground">
+                    {alertStatus ? (
+                      <AlertTriangle className={`w-3.5 h-3.5 ${alertStatus === "critical" ? "text-red-500" : "text-amber-500"}`} />
+                    ) : (page - 1) * 20 + i + 1}
+                  </td>
+                  <td className="px-3 py-2.5 font-medium text-foreground max-w-[140px]">
+                    <span className="truncate block" title={row.unit}>
+                      {row.unit.replace(/^M\.[A-Z0-9]+- /, "")}
+                    </span>
+                  </td>
+                  <td className="px-3 py-2.5 text-muted-foreground whitespace-nowrap">{row.region || "—"}</td>
+                  <td className="px-3 py-2.5 text-muted-foreground whitespace-nowrap">{row.area || "—"}</td>
+                  <td className="px-3 py-2.5 text-right tabular-nums">{fmt(row.noc, 0)}</td>
+                  <td className="px-3 py-2.5 text-right tabular-nums">{fmtJt(row.os_aktif)}</td>
+                  <td className="px-3 py-2.5 text-right tabular-nums">{fmtJt(row.lending)}</td>
+                  <td className="px-3 py-2.5 text-right tabular-nums text-red-500">{fmtJt(row.os_npl)}</td>
+                  <td className={`px-3 py-2.5 text-right tabular-nums ${pctColor(row.pct_rr != null ? row.pct_rr * 100 : undefined)}`}>
+                    {row.pct_rr != null ? `${(row.pct_rr * 100).toFixed(1)}%` : "—"}
+                  </td>
+                  <td className={`px-3 py-2.5 text-right tabular-nums ${achievColor(row.pct_lending)}`}>
+                    {row.pct_lending != null ? `${(row.pct_lending * 100).toFixed(1)}%` : "—"}
+                  </td>
+                  <td className="px-3 py-2.5">
+                    <Link href={`/units/${row.id}`}>
+                      <a className="p-1 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors inline-flex">
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </a>
+                    </Link>
+                  </td>
+                </tr>
+              );
+            })}
             {data.length === 0 && (
               <tr>
-                <td colSpan={9} className="px-5 py-10 text-center text-muted-foreground">
+                <td colSpan={11} className="px-5 py-10 text-center text-muted-foreground">
                   Tidak ada data ditemukan
                 </td>
               </tr>

@@ -4,13 +4,16 @@ import { useAuth } from "@/contexts/AuthContext";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import {
   LayoutDashboard, Upload, Table2, LogOut,
-  Activity, Users, ChevronRight, Menu, X
+  Activity, Users, ChevronRight, Menu, X,
+  FileText, ShieldAlert,
 } from "lucide-react";
 
 const navItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/units", label: "Data Unit", icon: Table2 },
   { href: "/import", label: "Import Data", icon: Upload },
+  { href: "/risk", label: "Analisis Risiko", icon: ShieldAlert },
+  { href: "/executive", label: "Ringkasan Eksekutif", icon: FileText },
 ];
 
 const adminItems = [
@@ -74,7 +77,6 @@ export default function Sidebar() {
       </nav>
 
       <div className="px-3 py-4 border-t" style={{ borderColor: "hsl(var(--sidebar-border))" }}>
-        {/* Theme Toggle */}
         <div style={{
           display: "flex",
           alignItems: "center",
@@ -103,7 +105,6 @@ export default function Sidebar() {
 
   return (
     <>
-      {/* Hamburger button — mobile only */}
       <button
         onClick={() => setOpen(true)}
         className="lg:hidden fixed top-3 left-3 z-50 w-10 h-10 flex items-center justify-center rounded-lg shadow-lg"
@@ -111,18 +112,15 @@ export default function Sidebar() {
         <Menu className="w-5 h-5 text-white" />
       </button>
 
-      {/* Overlay — mobile */}
       {open && (
         <div className="lg:hidden fixed inset-0 bg-black/60 z-40" onClick={() => setOpen(false)} />
       )}
 
-      {/* Desktop sidebar — always visible */}
       <aside className="hidden lg:flex flex-col fixed inset-y-0 left-0 w-60 z-30"
         style={{ background: "hsl(var(--sidebar))" }}>
         <NavContent />
       </aside>
 
-      {/* Mobile sidebar — slide in/out */}
       <aside
         className={`lg:hidden flex flex-col fixed inset-y-0 left-0 w-72 z-50 transform transition-transform duration-250 ${open ? "translate-x-0" : "-translate-x-full"}`}
         style={{ background: "hsl(var(--sidebar))" }}>
