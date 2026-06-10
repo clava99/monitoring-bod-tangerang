@@ -18,11 +18,12 @@ const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 5 * 60 * 1000, refetchOnWindowFocus: false } },
 });
 
-function ProtectedRoute({ component: Component, adminOnly = false }: { component: React.ComponentType; adminOnly?: boolean }) {
+function ProtectedRoute({ component: Component, adminOnly = false, managerOnly = false }: { component: React.ComponentType; adminOnly?: boolean; managerOnly?: boolean }) {
   const { user, isLoading } = useAuth();
   if (isLoading) return <SplashLoader />;
   if (!user) return <Redirect to="/login" />;
   if (adminOnly && user.role !== "admin" && user.role !== "super_admin") return <Redirect to="/" />;
+  if (managerOnly && user.role !== "admin" && user.role !== "super_admin" && user.role !== "manager") return <Redirect to="/" />;
   return <Component />;
 }
 
@@ -40,7 +41,7 @@ function Router() {
       <Route path="/" component={() => <ProtectedRoute component={Dashboard} />} />
       <Route path="/units" component={() => <ProtectedRoute component={Units} />} />
       <Route path="/units/:id" component={() => <ProtectedRoute component={UnitDetail} />} />
-      <Route path="/import" component={() => <ProtectedRoute component={Import} />} />
+      <Route path="/import" component={() => <ProtectedRoute component={Import} managerOnly />} />
       <Route path="/executive" component={() => <ProtectedRoute component={ExecutiveSummary} />} />
       <Route path="/risk" component={() => <ProtectedRoute component={RiskPage} />} />
       <Route path="/users" component={() => <ProtectedRoute component={Users} adminOnly />} />

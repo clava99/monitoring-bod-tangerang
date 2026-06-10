@@ -12,9 +12,12 @@ import {
 const navItems = [
   { href: "/", label: "Dasbor", icon: LayoutDashboard },
   { href: "/units", label: "Unit Data", icon: Table2 },
-  { href: "/import", label: "Impor Data", icon: Upload },
   { href: "/risk", label: "Analisis Risiko", icon: ShieldAlert },
   { href: "/executive", label: "Ringkasan Eksekutif", icon: FileText },
+];
+
+const managerItems = [
+  { href: "/import", label: "Impor Data", icon: Upload },
 ];
 
 const adminItems = [
@@ -87,6 +90,28 @@ export default function Sidebar() {
             </Link>
           );
         })}
+
+        {(user?.role === "admin" || user?.role === "super_admin" || user?.role === "manager") && (
+          <>
+            <p className="px-3 text-[11px] font-semibold uppercase tracking-wider mt-5 mb-2" style={{ color: sectionLabelColor }}>Manajemen</p>
+            {managerItems.map(({ href, label, icon: Icon }) => {
+              const active = location.startsWith(href);
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  className={`sidebar-link ${active ? "active" : ""}`}
+                  style={active ? {} : { color: isDark ? "rgba(203,213,225,0.7)" : "rgba(51,65,85,0.7)" }}
+                  onClick={() => setOpen(false)}
+                >
+                  <Icon className="w-4 h-4 shrink-0" />
+                  <span>{label}</span>
+                  {active && <ChevronRight className="w-3 h-3 ml-auto opacity-60" />}
+                </Link>
+              );
+            })}
+          </>
+        )}
 
         {(user?.role === "admin" || user?.role === "super_admin") && (
           <>

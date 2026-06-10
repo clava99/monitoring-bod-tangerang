@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { api } from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
 import Sidebar from "@/components/Sidebar";
 import { Plus, Pencil, Trash2, X, Loader2, Check, CheckSquare, Square, AlertTriangle, MousePointerClick } from "lucide-react";
 
@@ -97,6 +98,8 @@ function ConfirmModal({ open, title, description, confirmLabel, onConfirm, onCan
 }
 
 export default function Units() {
+  const { user } = useAuth();
+  const isManager = user?.role === "admin" || user?.role === "super_admin" || user?.role === "manager";
   const [units, setUnits] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -227,55 +230,57 @@ export default function Units() {
               <p className="text-xs text-muted-foreground mt-0.5">Kelola data monitoring unit</p>
             </div>
 
-            <div className="flex items-center gap-2">
-              {!selectMode ? (
-                <>
-                  <button
-                    onClick={() => setSelectMode(true)}
-                    disabled={!units?.total}
-                    className="flex items-center gap-1.5 px-3 py-2 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 disabled:opacity-40 transition-colors">
-                    <MousePointerClick className="w-3.5 h-3.5" />
-                    Select
-                  </button>
-                  <button
-                    onClick={() => setConfirmModal({ open: true, type: "all" })}
-                    disabled={bulkDeleting || !units?.total}
-                    className="flex items-center gap-1.5 px-3 py-2 bg-red-600 text-white text-xs font-medium rounded-lg hover:bg-red-700 disabled:opacity-40 transition-colors">
-                    {bulkDeleting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
-                    Delete All
-                  </button>
-                  <button
-                    onClick={() => { setShowForm(true); setEditItem(null); }}
-                    className="flex items-center gap-1.5 px-3 py-2 bg-primary text-primary-foreground text-xs font-medium rounded-lg hover:opacity-90">
-                    <Plus className="w-3.5 h-3.5" />
-                    Tambah Unit
-                  </button>
-                </>
-              ) : (
-                <>
-                  {selected.size > 0 && (
-                    <span className="px-2.5 py-1 bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-400 text-xs font-semibold rounded-full">
-                      {selected.size} dipilih
-                    </span>
-                  )}
-                  <button
-                    onClick={exitSelectMode}
-                    className="flex items-center gap-1.5 px-3 py-2 border border-border text-xs font-medium rounded-lg hover:bg-muted transition-colors">
-                    <X className="w-3.5 h-3.5" />
-                    Batal
-                  </button>
-                  <button
-                    onClick={handleDeleteClick}
-                    disabled={selected.size === 0 || bulkDeleting}
-                    className="flex items-center gap-1.5 px-3 py-2 bg-red-600 text-white text-xs font-medium rounded-lg hover:bg-red-700 disabled:opacity-40 transition-colors">
-                    {bulkDeleting
-                      ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      : <Trash2 className="w-3.5 h-3.5" />}
-                    Delete
-                  </button>
-                </>
-              )}
-            </div>
+            {isManager && (
+              <div className="flex items-center gap-2">
+                {!selectMode ? (
+                  <>
+                    <button
+                      onClick={() => setSelectMode(true)}
+                      disabled={!units?.total}
+                      className="flex items-center gap-1.5 px-3 py-2 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 disabled:opacity-40 transition-colors">
+                      <MousePointerClick className="w-3.5 h-3.5" />
+                      Select
+                    </button>
+                    <button
+                      onClick={() => setConfirmModal({ open: true, type: "all" })}
+                      disabled={bulkDeleting || !units?.total}
+                      className="flex items-center gap-1.5 px-3 py-2 bg-red-600 text-white text-xs font-medium rounded-lg hover:bg-red-700 disabled:opacity-40 transition-colors">
+                      {bulkDeleting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                      Delete All
+                    </button>
+                    <button
+                      onClick={() => { setShowForm(true); setEditItem(null); }}
+                      className="flex items-center gap-1.5 px-3 py-2 bg-primary text-primary-foreground text-xs font-medium rounded-lg hover:opacity-90">
+                      <Plus className="w-3.5 h-3.5" />
+                      Tambah Unit
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    {selected.size > 0 && (
+                      <span className="px-2.5 py-1 bg-red-100 text-red-700 dark:bg-red-500/15 dark:text-red-400 text-xs font-semibold rounded-full">
+                        {selected.size} dipilih
+                      </span>
+                    )}
+                    <button
+                      onClick={exitSelectMode}
+                      className="flex items-center gap-1.5 px-3 py-2 border border-border text-xs font-medium rounded-lg hover:bg-muted transition-colors">
+                      <X className="w-3.5 h-3.5" />
+                      Batal
+                    </button>
+                    <button
+                      onClick={handleDeleteClick}
+                      disabled={selected.size === 0 || bulkDeleting}
+                      className="flex items-center gap-1.5 px-3 py-2 bg-red-600 text-white text-xs font-medium rounded-lg hover:bg-red-700 disabled:opacity-40 transition-colors">
+                      {bulkDeleting
+                        ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        : <Trash2 className="w-3.5 h-3.5" />}
+                      Delete
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
@@ -338,7 +343,7 @@ export default function Units() {
                     <th className="px-4 py-3 text-right font-medium text-muted-foreground">NOC</th>
                     <th className="px-4 py-3 text-right font-medium text-muted-foreground">Lending</th>
                     <th className="px-4 py-3 text-right font-medium text-muted-foreground">% RR</th>
-                    {!selectMode && (
+                    {isManager && !selectMode && (
                       <th className="px-4 py-3 text-center font-medium text-muted-foreground">Aksi</th>
                     )}
                   </tr>
@@ -374,7 +379,7 @@ export default function Units() {
                       <td className="px-4 py-3 text-right tabular-nums">
                         {row.pct_rr != null ? `${(row.pct_rr * 100).toFixed(1)}%` : "—"}
                       </td>
-                      {!selectMode && (
+                      {isManager && !selectMode && (
                         <td className="px-4 py-3">
                           <div className="flex items-center justify-center gap-1">
                             <button
