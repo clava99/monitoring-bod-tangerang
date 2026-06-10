@@ -335,9 +335,16 @@ export default function ExecutiveSummary() {
       <style>{`
         @media print {
           body { background: white !important; }
-          .print\\:hidden { display: none !important; }
-          aside, nav, button.lg\\:hidden { display: none !important; }
-          main { margin-left: 0 !important; padding-top: 0 !important; }
+          aside,
+          nav,
+          button[class*="fixed"],
+          div[class*="fixed"][class*="inset-0"],
+          .print\\:hidden { display: none !important; visibility: hidden !important; }
+          main {
+            margin-left: 0 !important;
+            padding-top: 0 !important;
+            width: 100% !important;
+          }
           * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         }
       `}</style>

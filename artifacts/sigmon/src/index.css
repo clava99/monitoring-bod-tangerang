@@ -243,3 +243,17 @@ input, select, textarea { font-size: 16px !important; }
 .metric-positive { @apply text-emerald-600; }
 .metric-negative { @apply text-red-500; }
 .metric-neutral  { @apply text-blue-500; }
+
+/* ── Global print styles ─────────────────────────────────────────── */
+@media print {
+  aside,
+  .sidebar-toggle-btn {
+    display: none !important;
+    visibility: hidden !important;
+  }
+  main {
+    margin-left: 0 !important;
+    padding-top: 0 !important;
+    width: 100% !important;
+  }
+}

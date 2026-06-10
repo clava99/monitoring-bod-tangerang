@@ -144,7 +144,7 @@ export default function Sidebar() {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="lg:hidden fixed top-3 left-3 z-50 w-10 h-10 flex items-center justify-center rounded-lg shadow-lg"
+        className="sidebar-toggle-btn lg:hidden print:hidden fixed top-3 left-3 z-50 w-10 h-10 flex items-center justify-center rounded-lg shadow-lg"
         style={{
           background: isDark ? "rgba(8,14,30,0.88)" : "rgba(255,255,255,0.88)",
           backdropFilter: "blur(12px)",
@@ -157,18 +157,18 @@ export default function Sidebar() {
       </button>
 
       {open && (
-        <div className="lg:hidden fixed inset-0 bg-black/50 z-40 backdrop-blur-sm" onClick={() => setOpen(false)} />
+        <div className="lg:hidden print:hidden fixed inset-0 bg-black/50 z-40 backdrop-blur-sm" onClick={() => setOpen(false)} />
       )}
 
       <aside
-        className="hidden lg:flex flex-col fixed inset-y-0 left-0 w-60 z-30"
+        className="hidden lg:flex print:hidden flex-col fixed inset-y-0 left-0 w-60 z-30"
         style={sidebarStyle}
       >
         <NavContent />
       </aside>
 
       <aside
-        className={`lg:hidden flex flex-col fixed inset-y-0 left-0 w-72 z-50 transform transition-transform duration-250 ${open ? "translate-x-0" : "-translate-x-full"}`}
+        className={`lg:hidden print:hidden flex-col fixed inset-y-0 left-0 w-72 z-50 transform transition-transform duration-250 ${open ? "translate-x-0" : "-translate-x-full"}`}
         style={sidebarStyle}
       >
         <NavContent />
