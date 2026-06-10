@@ -70,8 +70,10 @@ export default function ExecutiveSummary() {
 
   return (
     <div className="bg-background min-h-screen">
-      <Sidebar />
-      <main className="lg:ml-60 min-h-screen pt-14 lg:pt-0">
+      <div className="print:hidden">
+        <Sidebar />
+      </div>
+      <main className="lg:ml-60 min-h-screen pt-14 lg:pt-0 print:ml-0 print:pt-0">
         {/* Header — hidden on print */}
         <div className="border-b border-border bg-card sticky top-0 z-10 px-4 sm:px-6 py-3 print:hidden">
           <div className="flex items-center justify-between gap-3 flex-wrap">
@@ -334,8 +336,9 @@ export default function ExecutiveSummary() {
         @media print {
           body { background: white !important; }
           .print\\:hidden { display: none !important; }
-          aside, nav { display: none !important; }
+          aside, nav, button.lg\\:hidden { display: none !important; }
           main { margin-left: 0 !important; padding-top: 0 !important; }
+          * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         }
       `}</style>
     </div>
