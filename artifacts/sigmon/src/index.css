@@ -245,6 +245,8 @@ input, select, textarea { font-size: 16px !important; }
 .metric-neutral  { @apply text-blue-500; }
 
 /* ── Global print styles ─────────────────────────────────────────── */
+/* Pendekatan ganda: (1) @media print untuk browser desktop          */
+/* (2) .is-printing class di <html> untuk mobile "Save as PDF"       */
 @media print {
   aside,
   .sidebar-toggle-btn {
@@ -256,4 +258,15 @@ input, select, textarea { font-size: 16px !important; }
     padding-top: 0 !important;
     width: 100% !important;
   }
+}
+
+html.is-printing aside,
+html.is-printing .sidebar-toggle-btn {
+  display: none !important;
+  visibility: hidden !important;
+}
+html.is-printing main {
+  margin-left: 0 !important;
+  padding-top: 0 !important;
+  width: 100% !important;
 }

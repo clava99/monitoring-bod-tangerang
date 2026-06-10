@@ -51,40 +51,30 @@ export default function ExecutiveSummary() {
     finally { setLoading(false); setRefreshing(false); }
   };
 
+  // Daftarkan beforeprint/afterprint untuk menangkap print dari browser native
+  useEffect(() => {
+    const onBefore = () => document.documentElement.classList.add("is-printing");
+    const onAfter  = () => document.documentElement.classList.remove("is-printing");
+    window.addEventListener("beforeprint", onBefore);
+    window.addEventListener("afterprint",  onAfter);
+    return () => {
+      window.removeEventListener("beforeprint", onBefore);
+      window.removeEventListener("afterprint",  onAfter);
+    };
+  }, []);
+
   useEffect(() => { fetchAll(); }, [period, region]);
 
   const handlePrint = () => {
-    // Sembunyikan semua elemen sidebar via inline style (prioritas tertinggi)
-    const sidebars = Array.from(document.querySelectorAll<HTMLElement>("aside"));
-    const toggleBtn = document.querySelector<HTMLElement>(".sidebar-toggle-btn");
-    const mainEl = document.querySelector<HTMLElement>("main");
-
-    const prevSidebar = sidebars.map(el => el.style.display);
-    const prevBtn = toggleBtn ? toggleBtn.style.display : "";
-    const prevMargin = mainEl ? mainEl.style.marginLeft : "";
-    const prevPadding = mainEl ? mainEl.style.paddingTop : "";
-
-    sidebars.forEach(el => { el.style.setProperty("display", "none", "important"); });
-    if (toggleBtn) toggleBtn.style.setProperty("display", "none", "important");
-    if (mainEl) {
-      mainEl.style.setProperty("margin-left", "0", "important");
-      mainEl.style.setProperty("padding-top", "0", "important");
-    }
-
-    // Tunggu reflow sebelum print
+    // Tambah class ke <html> secara synchronous — berlaku di CSS biasa maupun print
+    document.documentElement.classList.add("is-printing");
+    // Beri waktu browser 1 frame untuk reflow sebelum dialog print terbuka
     requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        window.print();
-        // Pulihkan setelah dialog print ditutup
-        setTimeout(() => {
-          sidebars.forEach((el, i) => { el.style.display = prevSidebar[i]; });
-          if (toggleBtn) toggleBtn.style.display = prevBtn;
-          if (mainEl) {
-            mainEl.style.marginLeft = prevMargin;
-            mainEl.style.paddingTop = prevPadding;
-          }
-        }, 1000);
-      });
+      window.print();
+      // Pulihkan setelah dialog ditutup
+      setTimeout(() => {
+        document.documentElement.classList.remove("is-printing");
+      }, 500);
     });
   };
 
@@ -362,21 +352,27 @@ export default function ExecutiveSummary() {
         </div>
       </main>
 
-      {/* Print styles */}
+      {/* Print styles — ganda: @media print + html.is-printing class */}
       <style>{`
         @media print {
           body { background: white !important; }
-          aside,
-          nav,
-          button[class*="fixed"],
-          div[class*="fixed"][class*="inset-0"],
-          .print\\:hidden { display: none !important; visibility: hidden !important; }
-          main {
-            margin-left: 0 !important;
-            padding-top: 0 !important;
-            width: 100% !important;
+          aside, nav, .sidebar-toggle-btn, .print-hidden-el {
+            display: none !important; visibility: hidden !important;
           }
+          main { margin-left: 0 !important; padding-top: 0 !important; width: 100% !important; }
           * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        }
+        html.is-printing aside,
+        html.is-printing nav,
+        html.is-printing .sidebar-toggle-btn,
+        html.is-printing .print-hidden-el {
+          display: none !important;
+          visibility: hidden !important;
+        }
+        html.is-printing main {
+          margin-left: 0 !important;
+          padding-top: 0 !important;
+          width: 100% !important;
         }
       `}</style>
     </div>
