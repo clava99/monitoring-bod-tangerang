@@ -54,7 +54,38 @@ export default function ExecutiveSummary() {
   useEffect(() => { fetchAll(); }, [period, region]);
 
   const handlePrint = () => {
-    window.print();
+    // Sembunyikan semua elemen sidebar via inline style (prioritas tertinggi)
+    const sidebars = Array.from(document.querySelectorAll<HTMLElement>("aside"));
+    const toggleBtn = document.querySelector<HTMLElement>(".sidebar-toggle-btn");
+    const mainEl = document.querySelector<HTMLElement>("main");
+
+    const prevSidebar = sidebars.map(el => el.style.display);
+    const prevBtn = toggleBtn ? toggleBtn.style.display : "";
+    const prevMargin = mainEl ? mainEl.style.marginLeft : "";
+    const prevPadding = mainEl ? mainEl.style.paddingTop : "";
+
+    sidebars.forEach(el => { el.style.setProperty("display", "none", "important"); });
+    if (toggleBtn) toggleBtn.style.setProperty("display", "none", "important");
+    if (mainEl) {
+      mainEl.style.setProperty("margin-left", "0", "important");
+      mainEl.style.setProperty("padding-top", "0", "important");
+    }
+
+    // Tunggu reflow sebelum print
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        window.print();
+        // Pulihkan setelah dialog print ditutup
+        setTimeout(() => {
+          sidebars.forEach((el, i) => { el.style.display = prevSidebar[i]; });
+          if (toggleBtn) toggleBtn.style.display = prevBtn;
+          if (mainEl) {
+            mainEl.style.marginLeft = prevMargin;
+            mainEl.style.paddingTop = prevPadding;
+          }
+        }, 1000);
+      });
+    });
   };
 
   const nplRatio = summary?.total_os_aktif > 0
